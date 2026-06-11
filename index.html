@@ -1,0 +1,2009 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✂️ 숏츠 클리퍼 — Web Edition</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--surface3:#2e2e2e;
+  --border:#333;--text:#f0f0f0;--muted:#888;
+  --accent:#7c5cfc;--accent-h:#9b7dff;--accent-dim:rgba(124,92,252,0.15);
+  --success:#4caf7d;--danger:#e05252;--warn:#e8a000;
+  --r:12px;--rs:8px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Malgun Gothic','Segoe UI','Noto Sans KR',sans-serif;font-size:14px;}
+
+/* ── 헤더 ── */
+.titlebar{height:48px;background:var(--surface);display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;gap:10px;}
+.titlebar-icon{font-size:18px;}
+.titlebar-title{font-weight:700;font-size:14px;flex:1;}
+.titlebar-sub{font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:10px;border:1px solid var(--border);}
+.settings-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:14px;padding:5px 10px;border-radius:var(--rs);color:var(--text);transition:background .15s;}
+.settings-btn:hover{background:var(--surface3);}
+
+/* ── 설정 패널 ── */
+.settings-panel{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;max-height:0;overflow:hidden;transition:max-height .3s,padding .3s;}
+.settings-panel.open{max-height:400px;padding:20px 24px;}
+.settings-panel h3{margin-bottom:16px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:600px){.settings-grid{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.input-row{display:flex;gap:6px;}
+input[type=text],input[type=password],textarea,select{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;font-family:inherit;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;cursor:pointer;font-size:13px;color:var(--text);white-space:nowrap;transition:background .15s;}
+.icon-btn:hover{background:var(--surface3);}
+.save-msg{font-size:12px;color:var(--success);margin-left:8px;}
+.settings-footer{margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* ── 메인 ── */
+main{max-width:900px;margin:0 auto;padding:24px 20px 80px;display:flex;flex-direction:column;gap:20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;}
+.step-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.step-header h2{font-size:15px;font-weight:700;flex:1;}
+.step-badge{width:26px;height:26px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+
+/* ── 버튼 ── */
+.btn{padding:9px 20px;border-radius:var(--rs);border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover:not(:disabled){background:var(--accent-h);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover:not(:disabled){background:var(--surface2);color:var(--text);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-success:hover:not(:disabled){background:#5dbf8f;}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-warn{background:var(--warn);color:#fff;}
+
+/* ── URL 입력 ── */
+.url-row{display:flex;gap:10px;}
+.url-row input{flex:1;font-size:14px;}
+.clip-count-row{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--muted);}
+.clip-count-row input[type=range]{flex:1;accent-color:var(--accent);}
+#clipCountVal{font-size:15px;font-weight:700;color:var(--accent);min-width:24px;text-align:center;}
+
+/* ── 비디오 정보 카드 ── */
+.video-info-bar{display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border);margin-bottom:16px;}
+.video-thumb{width:80px;height:56px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface3);}
+.video-meta{flex:1;min-width:0;}
+.video-title{font-size:13px;font-weight:600;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.video-detail{font-size:11px;color:var(--muted);}
+
+/* ── 파이프라인 ── */
+.pipeline{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.pipe-step{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;text-align:center;transition:all .3s;}
+.pipe-step.active{border-color:var(--accent);background:var(--accent-dim);}
+.pipe-step.done{border-color:var(--success);background:rgba(76,175,125,.1);}
+.pipe-step.error{border-color:var(--danger);background:rgba(224,82,82,.1);}
+.pipe-icon{font-size:22px;margin-bottom:5px;}
+.pipe-label{font-size:11px;font-weight:600;margin-bottom:3px;}
+.pipe-status{font-size:10px;color:var(--muted);}
+.pipe-step.active .pipe-status{color:var(--accent);}
+.pipe-step.done .pipe-status{color:var(--success);}
+.pipe-step.error .pipe-status{color:var(--danger);}
+.pipe-arrow{font-size:16px;color:var(--muted);flex-shrink:0;}
+.log-box{background:#0a0a0a;border:1px solid var(--border);border-radius:var(--rs);padding:10px;height:120px;overflow-y:auto;font-family:Consolas,monospace;font-size:11px;color:#aaa;line-height:1.6;}
+.log-box::-webkit-scrollbar{width:4px;}
+.log-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── 자막 수동 입력 ── */
+.manual-caption{margin-top:12px;display:none;}
+.manual-caption.show{display:block;}
+.caption-hint{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.6;}
+.caption-hint a{color:var(--accent);text-decoration:none;}
+.caption-hint a:hover{text-decoration:underline;}
+
+/* ── 클립 목록 ── */
+.clips-grid{display:flex;flex-direction:column;gap:10px;}
+.clip-count-badge{background:var(--accent);color:#fff;font-size:11px;padding:2px 8px;border-radius:12px;font-weight:700;}
+.clip-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:16px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:all .2s;}
+.clip-card:hover{border-color:var(--accent);background:#2a2a2a;}
+.clip-card.exported{border-color:var(--success);}
+.clip-rank{width:30px;height:30px;border-radius:50%;background:var(--accent-dim);border:1.5px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.clip-body{flex:1;min-width:0;}
+.clip-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.clip-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.clip-time{font-size:11px;color:var(--accent);font-family:monospace;background:var(--accent-dim);padding:2px 7px;border-radius:4px;}
+.clip-duration{font-size:11px;color:var(--muted);}
+.clip-hook{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.5;}
+.clip-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.clip-tag{font-size:10px;padding:2px 7px;background:var(--surface3);border-radius:4px;color:var(--muted);}
+.clip-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+
+/* ── 편집기 오버레이 ── */
+.editor-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;}
+.editor-overlay.show{display:flex;}
+.editor-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.editor-label{flex:1;font-weight:600;font-size:13px;color:var(--muted);}
+.editor-body{display:flex;flex:1;overflow:hidden;}
+
+/* 왼쪽 */
+.editor-left{width:310px;flex-shrink:0;display:flex;flex-direction:column;background:#111;border-right:1px solid var(--border);padding:12px;gap:10px;overflow-y:auto;}
+.preview-box{position:relative;background:#000;border-radius:var(--rs);overflow:hidden;aspect-ratio:9/16;width:100%;flex-shrink:0;}
+.preview-box video{position:absolute;inset:0;width:100%;height:100%;}
+.preview-box.mode-letterbox video{object-fit:contain;}
+.preview-box.mode-full video{object-fit:cover;}
+.ov-title,.ov-channel{position:absolute;display:flex;align-items:center;justify-content:center;padding:6px 12px;text-align:center;pointer-events:all;z-index:10;line-height:1.35;text-shadow:0 1px 8px rgba(0,0,0,1),0 0 20px rgba(0,0,0,.8);cursor:move;user-select:none;transform:translate(-50%,-50%);border-radius:4px;word-break:keep-all;white-space:normal;min-width:60px;min-height:24px;}
+.ov-title:hover,.ov-channel:hover{outline:1.5px dashed rgba(124,92,252,.7);}
+.ov-text{pointer-events:none;display:block;width:100%;overflow:hidden;}
+.rhandle{position:absolute;width:10px;height:10px;background:var(--accent);border:1.5px solid #fff;border-radius:2px;z-index:12;opacity:0;transition:opacity .15s;pointer-events:all;}
+.ov-title:hover .rhandle,.ov-channel:hover .rhandle,.rhandle:hover{opacity:1;}
+.rh-nw{top:-5px;left:-5px;cursor:nw-resize;}
+.rh-ne{top:-5px;right:-5px;cursor:ne-resize;}
+.rh-sw{bottom:-5px;left:-5px;cursor:sw-resize;}
+.rh-se{bottom:-5px;right:-5px;cursor:se-resize;}
+.rh-w{top:50%;left:-5px;transform:translateY(-50%);cursor:w-resize;}
+.rh-e{top:50%;right:-5px;transform:translateY(-50%);cursor:e-resize;}
+.rh-n{top:-5px;left:50%;transform:translateX(-50%);cursor:n-resize;}
+.rh-s{bottom:-5px;left:50%;transform:translateX(-50%);cursor:s-resize;}
+
+/* 영상 없을 때 미리보기 안 플레이스홀더 + 썸네일 배경 */
+.preview-thumb-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45;z-index:0;}
+.preview-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;background:rgba(0,0,0,.35);cursor:pointer;text-align:center;border:2px dashed rgba(255,255,255,.25);border-radius:var(--rs);transition:all .2s;}
+.preview-placeholder:hover,.preview-placeholder.drag-over{border-color:var(--accent);background:rgba(124,92,252,.2);}
+.preview-placeholder input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.preview-placeholder .drop-icon{font-size:30px;margin-bottom:8px;opacity:.5;}
+.preview-placeholder .drop-txt{font-size:11px;color:#ccc;line-height:1.6;text-shadow:0 1px 4px #000;}
+.guide-safe{position:absolute;inset:5%;border:1.5px dashed rgba(255,255,0,.7);border-radius:2px;pointer-events:none;z-index:20;}
+.guide-grid{position:absolute;inset:0;pointer-events:none;z-index:20;}
+.gline{position:absolute;background:rgba(255,255,0,.5);}
+.gh{left:0;right:0;height:1px;}
+.gv{top:0;bottom:0;width:1px;}
+
+/* 비디오 없을 때 드롭존 */
+.video-dropzone{aspect-ratio:9/16;background:var(--surface2);border:2px dashed var(--border);border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;width:100%;flex-shrink:0;}
+.video-dropzone:hover{border-color:var(--accent);background:var(--accent-dim);}
+.video-dropzone.drag-over{border-color:var(--accent);background:var(--accent-dim);}
+.video-dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.video-dropzone .drop-icon{font-size:30px;margin-bottom:8px;opacity:.4;}
+.video-dropzone .drop-txt{font-size:11px;color:var(--muted);text-align:center;line-height:1.6;}
+
+.player-controls{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ctrl-btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px;color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;}
+.ctrl-btn:hover{background:var(--surface3);}
+.time-display{margin-left:auto;font-family:monospace;font-size:12px;color:var(--accent);background:var(--accent-dim);padding:3px 8px;border-radius:4px;}
+
+.timeline-wrap{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.timeline-bar{position:relative;height:30px;background:var(--surface3);border-radius:6px;overflow:hidden;cursor:pointer;}
+.timeline-region{position:absolute;top:0;bottom:0;background:rgba(124,92,252,.35);border-left:3px solid #5af;border-right:3px solid #f85;}
+.timeline-cursor{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none;z-index:3;}
+.tl-handle{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;z-index:4;border-radius:2px;transition:width .1s;}
+.tl-handle:hover{width:8px;}
+.tl-start{background:#5af;border-radius:3px 0 0 3px;}
+.tl-end{background:#f85;border-radius:0 3px 3px 0;margin-left:-6px;}
+.timeline-labels{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted);font-family:monospace;margin-top:2px;}
+.tl-label-dur{font-size:11px;color:var(--accent);}
+
+/* 오른쪽 */
+.editor-right{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:16px;}
+.editor-right::-webkit-scrollbar{width:4px;}
+.editor-right::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.edit-section{display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #222;padding-bottom:14px;}
+.edit-section:last-child{border-bottom:none;}
+.edit-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.edit-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;width:100%;font-family:inherit;}
+.edit-input:focus{border-color:var(--accent);}
+
+.layout-btns{display:flex;gap:8px;}
+.layout-btn{flex:1;background:var(--surface2);border:2px solid var(--border);border-radius:var(--rs);padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);transition:all .15s;font-family:inherit;}
+.layout-btn:hover{border-color:var(--accent);color:var(--text);}
+.layout-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--text);}
+.layout-btn span{font-size:12px;font-weight:600;}
+.layout-btn small{font-size:10px;color:var(--muted);}
+.layout-thumb{width:26px;height:44px;border-radius:2px;background:#333;position:relative;}
+.lb-thumb::before,.lb-thumb::after{content:'';position:absolute;left:0;right:0;height:30%;background:var(--accent);opacity:.6;}
+.lb-thumb::before{top:0;}
+.lb-thumb::after{bottom:0;}
+.lb-thumb{background:#555;}
+.full-thumb{background:linear-gradient(135deg,#4a4a4a,#555);}
+
+.style-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.style-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;color:var(--text);font-size:12px;outline:none;cursor:pointer;font-family:inherit;flex:1;min-width:90px;}
+.style-num{width:54px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 8px;color:var(--text);font-size:12px;outline:none;text-align:center;}
+.style-num:focus{border-color:var(--accent);}
+.style-unit{font-size:11px;color:var(--muted);}
+.style-color{width:32px;height:30px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;padding:2px;background:var(--surface2);}
+.style-bold{width:32px;height:30px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);cursor:pointer;font-weight:900;font-size:14px;font-family:serif;}
+.style-bold.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+.guide-toggles{display:flex;gap:14px;}
+.guide-toggles label{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;}
+
+.time-editor{display:flex;flex-direction:column;gap:6px;}
+.time-value{font-family:monospace;font-size:20px;font-weight:700;color:var(--accent);}
+.time-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.tbtn{padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;}
+.tbtn:hover{background:var(--surface3);color:var(--text);}
+.tbtn.accent{border-color:rgba(124,92,252,.4);color:var(--accent);}
+.tbtn.accent:hover{background:var(--accent-dim);}
+.duration-display{font-size:16px;font-weight:700;font-family:monospace;}
+
+.tags-edit{display:flex;flex-wrap:wrap;gap:6px;min-height:28px;}
+.tag-chip{display:flex;align-items:center;gap:4px;background:var(--surface3);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;}
+.tag-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;line-height:1;}
+.tag-chip button:hover{color:var(--danger);}
+.tag-add-row{display:flex;gap:6px;}
+.tag-input{font-size:12px;padding:6px 10px;}
+.hook-text{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:var(--rs);padding:10px 12px;line-height:1.6;border-left:3px solid var(--accent);}
+
+/* 타임스탬프 복사 박스 */
+.export-ts-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-top:4px;}
+.export-ts-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.export-ts-text{font-family:monospace;font-size:12px;color:var(--accent);margin-bottom:10px;line-height:1.8;}
+.export-done-btns{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* 모달 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(4px);display:none;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:30px 36px;text-align:center;min-width:280px;}
+.modal-icon{font-size:34px;margin-bottom:10px;}
+.modal h3{margin-bottom:8px;font-size:15px;}
+.modal p{color:var(--muted);font-size:12px;margin-bottom:18px;}
+.progress-bar{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;width:0%;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+
+/* 알림 토스트 */
+.toast-container{position:fixed;bottom:16px;right:16px;z-index:500;display:flex;flex-direction:column;gap:6px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.5);animation:slideIn .25s ease;max-width:280px;}
+.toast.success{border-color:var(--success);}
+.toast.error{border-color:var(--danger);}
+.toast.info{border-color:var(--accent);}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+body::-webkit-scrollbar{width:6px;}
+body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ══ 헤더 ══ -->
+<div class="titlebar">
+  <span class="titlebar-icon">✂️</span>
+  <span class="titlebar-title">숏츠 클리퍼</span>
+  <span class="titlebar-sub">Web Edition</span>
+  <button class="settings-btn" id="settingsToggleBtn">⚙️ 설정</button>
+</div>
+
+<!-- ══ 설정 패널 ══ -->
+<div class="settings-panel" id="settingsPanel">
+  <h3>API 설정</h3>
+  <div class="settings-grid">
+    <div class="form-group">
+      <label>Gemini API 키 (AI 클립 분석)</label>
+      <div class="input-row">
+        <input type="password" id="geminiKeyInput" placeholder="AIza...">
+        <button class="icon-btn" id="toggleGemini">👁</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>YouTube Data API 키 (영상 정보)</label>
+      <div class="input-row">
+        <input type="password" id="ytKeyInput" placeholder="AIza...">
+        <button class="icon-btn" id="toggleYt">👁</button>
+      </div>
+    </div>
+    <div class="form-group" style="grid-column:1/-1;">
+      <label>클립 정보 저장 폴더</label>
+      <div class="input-row">
+        <input type="text" id="saveDirDisplay" readonly placeholder="폴더를 선택하면 클립 정보(.txt)가 자동 저장됩니다" style="cursor:pointer;" onclick="pickSaveDir()">
+        <button class="icon-btn" id="chooseSaveDir" onclick="pickSaveDir()">📁 선택</button>
+        <button class="icon-btn" id="clearSaveDir" onclick="clearSaveDir()" title="폴더 해제">✕</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;">
+        ⚠️ 폴더 선택은 현재 세션에만 유지됩니다. Chrome/Edge에서만 지원.
+      </div>
+    </div>
+  </div>
+  <div class="settings-footer">
+    <button class="btn btn-primary btn-sm" id="saveSettingsBtn">💾 저장</button>
+    <span class="save-msg" id="saveMsg"></span>
+    <span style="font-size:11px;color:var(--muted);margin-left:auto;">키는 브라우저 로컬에만 저장됩니다</span>
+  </div>
+</div>
+
+<main>
+  <!-- ══ STEP 1: URL 입력 ══ -->
+  <div class="card" id="step1">
+    <div class="step-header">
+      <span class="step-badge">1</span>
+      <h2>YouTube URL 입력</h2>
+    </div>
+    <div class="url-row">
+      <input type="text" id="urlInput" placeholder="https://www.youtube.com/watch?v=...">
+      <button class="btn btn-primary" id="startBtn">▶ 분석 시작</button>
+    </div>
+    <div class="clip-count-row">
+      <span>추천 클립 수</span>
+      <input type="range" id="clipCountRange" min="1" max="10" value="6">
+      <span id="clipCountVal">6</span>
+      <span>개</span>
+    </div>
+    <!-- 자막 수동 입력 -->
+    <div class="manual-caption" id="manualCaptionArea">
+      <div class="caption-hint">
+        ⚠️ 자막을 자동으로 불러올 수 없는 영상입니다.<br>
+        아래 중 하나를 사용해주세요:<br>
+        • YouTube 자막 설정 → "…" → "자막 다운로드" → 텍스트 붙여넣기<br>
+        • <a href="https://downsub.com" target="_blank">DownSub.com</a>에서 SRT 다운로드 → 텍스트 복사
+      </div>
+      <textarea id="manualCaptionInput" placeholder="여기에 자막/스크립트를 붙여넣으세요. 타임스탬프 형식: [00:00] 또는 타임스탬프 없이 텍스트만도 가능합니다."></textarea>
+      <div style="margin-top:8px;display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" id="manualAnalyzeBtn">🤖 수동 분석 시작</button>
+        <button class="btn btn-ghost btn-sm" id="manualCancelBtn">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: 진행 ══ -->
+  <div class="card" id="step2" style="display:none;">
+    <div class="step-header">
+      <span class="step-badge">2</span>
+      <h2>분석 중...</h2>
+    </div>
+    <div id="videoInfoBar" style="display:none;" class="video-info-bar">
+      <img class="video-thumb" id="videoThumb" src="" alt="">
+      <div class="video-meta">
+        <div class="video-title" id="videoTitleMeta"></div>
+        <div class="video-detail" id="videoDetailMeta"></div>
+      </div>
+    </div>
+    <div class="pipeline">
+      <div class="pipe-step" id="pipe-fetch">
+        <div class="pipe-icon">📋</div>
+        <div class="pipe-label">자막 수집</div>
+        <div class="pipe-status" id="status-fetch">대기</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" id="pipe-analyze">
+        <div class="pipe-icon">🤖</div>
+        <div class="pipe-label">AI 분석</div>
+        <div class="pipe-status" id="status-analyze">대기</div>
+      </div>
+    </div>
+    <div class="log-box" id="logBox"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" id="cancelBtn">취소</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: 결과 ══ -->
+  <div class="card" id="step3" style="display:none;">
+    <div class="step-header">
+      <span class="step-badge">3</span>
+      <h2>추천 클립 <span class="clip-count-badge" id="clipCount">0</span></h2>
+      <button class="btn btn-ghost btn-sm" id="resetBtn">↩ 처음으로</button>
+    </div>
+    <div id="videoInfoBar2" style="display:none;" class="video-info-bar">
+      <img class="video-thumb" id="videoThumb2" src="" alt="">
+      <div class="video-meta">
+        <div class="video-title" id="videoTitleMeta2"></div>
+        <div class="video-detail" id="videoDetailMeta2"></div>
+      </div>
+    </div>
+    <div class="clips-grid" id="clipsGrid"></div>
+  </div>
+</main>
+
+<!-- ══ 편집기 오버레이 ══ -->
+<div class="editor-overlay" id="editorOverlay">
+  <div class="editor-wrap" style="display:flex;flex-direction:column;height:100%;">
+    <div class="editor-header">
+      <span class="editor-label" id="editorLabel">클립 편집</span>
+      <button class="btn btn-warn btn-sm" id="editorVideoExportBtn">🎬 MP4 추출</button>
+      <button class="btn btn-success btn-sm" id="editorExportBtn">✂️ 타임스탬프 저장</button>
+      <button class="btn btn-ghost btn-sm" id="editorBackBtn">✕ 닫기</button>
+    </div>
+    <div class="editor-body">
+      <!-- 왼쪽: 미리보기 -->
+      <div class="editor-left">
+        <!-- 비디오 프리뷰 (영상 없이도 항상 표시 → 텍스트 배치 가능) -->
+        <div class="preview-box mode-letterbox" id="previewBox">
+          <img class="preview-thumb-bg" id="previewThumbBg" alt="" style="display:none;">
+          <iframe id="ytPreview" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          <video id="previewVideo" preload="metadata" style="display:none;"></video>
+          <div class="preview-placeholder" id="videoDropzone">
+            <input type="file" id="videoFileInput" accept="video/*">
+            <div class="drop-icon">🎬</div>
+            <div class="drop-txt">
+              영상 파일을 드래그하거나<br>클릭해서 불러오세요<br>
+              <span style="font-size:10px;color:#999;">(MP4, MOV 등)<br>영상 없이도 텍스트 배치는 가능합니다</span>
+            </div>
+          </div>
+          <div class="ov-title" id="ovTitle" style="display:none;"></div>
+          <div class="ov-channel" id="ovChannel" style="display:none;"></div>
+          <div class="guide-safe" id="guideSafe" style="display:none;"></div>
+          <div class="guide-grid" id="guideGrid" style="display:none;">
+            <div class="gline gh" style="top:33.3%"></div>
+            <div class="gline gh" style="top:66.6%"></div>
+            <div class="gline gv" style="left:33.3%"></div>
+            <div class="gline gv" style="left:66.6%"></div>
+          </div>
+        </div>
+        <!-- YouTube 미리보기 컨트롤 (영상 파일을 불러오기 전) -->
+        <div class="player-controls" id="ytPreviewControls" style="display:none;">
+          <button class="ctrl-btn" id="ytSeekBtn">▶ 시작점부터 재생</button>
+          <button class="ctrl-btn" id="ytLoadFileBtn">📂 영상 파일 불러오기</button>
+        </div>
+        <!-- 플레이어 컨트롤 (비디오 있을 때만) -->
+        <div class="player-controls" id="playerControls" style="display:none;">
+          <button class="ctrl-btn" id="playClipBtn">▶</button>
+          <button class="ctrl-btn" id="pauseBtn">⏸</button>
+          <span class="time-display" id="currentTimeDisplay">00:00</span>
+        </div>
+        <!-- 타임라인 -->
+        <div class="timeline-wrap" id="timelineWrap" style="display:none;">
+          <div class="timeline-bar" id="timelineBar">
+            <div class="timeline-region" id="clipRegion"></div>
+            <div class="timeline-cursor" id="timelineCursor" style="left:0%"></div>
+            <div class="tl-handle tl-start" id="tlHandleStart"></div>
+            <div class="tl-handle tl-end" id="tlHandleEnd"></div>
+          </div>
+          <div class="timeline-labels">
+            <span id="tlStart">00:00</span>
+            <span class="tl-label-dur" id="tlDur">-</span>
+            <span id="tlEnd">00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 설정 -->
+      <div class="editor-right">
+        <!-- 제목 -->
+        <div class="edit-section">
+          <div class="edit-label">📝 숏츠 제목</div>
+          <input class="edit-input" id="editTitle" type="text" placeholder="제목을 입력하세요">
+          <div class="hook-text" id="editHook"></div>
+        </div>
+        <!-- 시간 편집 -->
+        <div class="edit-section">
+          <div class="edit-label">⏱ 클립 구간</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="time-editor">
+              <div style="font-size:11px;color:var(--muted);">시작</div>
+              <div class="time-value" id="editStartDisplay">00:00.0</div>
+              <div class="time-btns">
+                <button class="tbtn" data-target="start" data-delta="-5">-5s</button>
+                <button class="tbtn" data-target="start" data-delta="-1">-1s</button>
+                <button class="tbtn accent" data-target="start" data-delta="-0.1">-0.1</button>
+                <button class="tbtn accent" data-target="start" data-delta="0.1">+0.1</button>
+                <button class="tbtn" data-target="start" data-delta="1">+1s</button>
+              </div>
+            </div>
+            <div class="time-editor">
+              <div style="font-size:11px;color:var(--muted);">종료</div>
+              <div class="time-value" id="editEndDisplay">00:00.0</div>
+              <div class="time-btns">
+                <button class="tbtn" data-target="end" data-delta="-1">-1s</button>
+                <button class="tbtn accent" data-target="end" data-delta="-0.1">-0.1</button>
+                <button class="tbtn accent" data-target="end" data-delta="0.1">+0.1</button>
+                <button class="tbtn" data-target="end" data-delta="1">+1s</button>
+                <button class="tbtn" data-target="end" data-delta="5">+5s</button>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:4px;">
+            <span style="font-size:11px;color:var(--muted);">길이: </span>
+            <span class="duration-display" id="editDuration">-</span>
+          </div>
+        </div>
+        <!-- 레이아웃 -->
+        <div class="edit-section">
+          <div class="edit-label">📐 레이아웃</div>
+          <div class="layout-btns">
+            <button class="layout-btn active" data-layout="letterbox">
+              <div class="layout-thumb lb-thumb"></div>
+              <span>레터박스</span>
+              <small>위아래 검은 띠</small>
+            </button>
+            <button class="layout-btn" data-layout="full">
+              <div class="layout-thumb full-thumb"></div>
+              <span>풀스크린</span>
+              <small>꽉 채우기</small>
+            </button>
+          </div>
+        </div>
+        <!-- 제목 스타일 -->
+        <div class="edit-section">
+          <div class="edit-label">🔤 제목 텍스트 스타일</div>
+          <div class="style-row">
+            <select class="style-select" id="titleFont">
+              <option value="Malgun Gothic">맑은 고딕</option>
+              <option value="Gulim">굴림</option>
+              <option value="Dotum">돋움</option>
+              <option value="Batang">바탕</option>
+              <option value="Gungsuh">궁서</option>
+              <option value="Arial">Arial</option>
+              <option value="Arial Black">Arial Black</option>
+              <option value="Impact">Impact</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Segoe UI">Segoe UI</option>
+            </select>
+            <input class="style-num" type="number" id="titleSize" value="52" min="14" max="120">
+            <span class="style-unit">px</span>
+            <input class="style-color" type="color" id="titleColor" value="#ffffff" title="글자색">
+            <button class="style-bold on" id="titleBold">B</button>
+          </div>
+          <div class="style-row">
+            <span style="font-size:11px;color:var(--muted);">텍스트 배경</span>
+            <input class="style-color" type="color" id="titleBgColor" value="#e00000" title="배경색">
+            <button class="style-bold on" id="titleBgOn" style="width:auto;padding:0 10px;font-size:11px;font-family:inherit;font-weight:600;">배경 끄기</button>
+          </div>
+        </div>
+        <!-- 채널명 -->
+        <div class="edit-section">
+          <div class="edit-label">
+            <input type="checkbox" id="showChannel" checked> 채널명 표시
+          </div>
+          <input class="edit-input" id="channelName" type="text" placeholder="채널명 (예: 경제 냠냠)">
+          <div class="style-row">
+            <select class="style-select" id="channelFont">
+              <option value="Malgun Gothic">맑은 고딕</option>
+              <option value="Gulim">굴림</option>
+              <option value="Dotum">돋움</option>
+              <option value="Batang">바탕</option>
+              <option value="Gungsuh">궁서</option>
+              <option value="Arial">Arial</option>
+              <option value="Arial Black">Arial Black</option>
+              <option value="Impact">Impact</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Segoe UI">Segoe UI</option>
+            </select>
+            <input class="style-num" type="number" id="channelSize" value="36" min="10" max="80">
+            <span class="style-unit">px</span>
+            <input class="style-color" type="color" id="channelColor" value="#ffffff" title="글자색">
+          </div>
+          <div class="style-row">
+            <span style="font-size:11px;color:var(--muted);">텍스트 배경</span>
+            <input class="style-color" type="color" id="channelBgColor" value="#000000" title="배경색">
+            <button class="style-bold" id="channelBgOn" style="width:auto;padding:0 10px;font-size:11px;font-family:inherit;font-weight:600;">배경 켜기</button>
+          </div>
+        </div>
+        <!-- 가이드 -->
+        <div class="edit-section">
+          <div class="edit-label">📏 가이드라인</div>
+          <div class="guide-toggles">
+            <label><input type="checkbox" id="chkSafeZone"> 안전 영역</label>
+            <label><input type="checkbox" id="chkGrid"> 3×3 그리드</label>
+          </div>
+        </div>
+        <!-- 태그 -->
+        <div class="edit-section">
+          <div class="edit-label">🏷 해시태그</div>
+          <div class="tags-edit" id="tagsEdit"></div>
+          <div class="tag-add-row">
+            <input class="edit-input tag-input" id="newTagInput" type="text" placeholder="#태그 입력">
+            <button class="btn btn-ghost btn-sm" id="addTagBtn">+ 추가</button>
+          </div>
+        </div>
+        <!-- 타임스탬프 출력 -->
+        <div class="edit-section" id="exportSection" style="display:none;">
+          <div class="export-ts-box">
+            <div class="export-ts-label">✅ 클립 정보</div>
+            <div class="export-ts-text" id="exportTsText"></div>
+            <div class="export-done-btns">
+              <button class="btn btn-success btn-sm" id="copyTsBtn">📋 복사</button>
+              <button class="btn btn-ghost btn-sm" id="copyTagsBtn">#태그 복사</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 토스트 ══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── 전역 상태 ──
+let clips = [], segments = [];
+let saveDirHandle = null;
+let editIdx = -1, editStart = 0, editEnd = 0, editTags = [];
+let videoLoaded = false;
+let videoFile = null;
+let geminiKey = '', ytKey = '', clipCount = 6;
+let videoInfo = null;
+let currentVideoId = null; // YouTube 임베드 미리보기용 (영상 정보 API 키 없이도 동작)
+let abortController = null;
+let ovState = {
+  layout: 'letterbox',
+  title:   { font:'Malgun Gothic', size:52, color:'#ffffff', bold:true,  bg:'#e00000', bgOn:true,  cx:0.5, cy:0.17, w:0.75, h:0.10 },
+  channel: { font:'Malgun Gothic', size:36, color:'#ffffff', show:true,  bg:'#000000', bgOn:false, cx:0.5, cy:0.91, w:0.60, h:0.06 }
+};
+const DEFAULT_POS = {
+  letterbox: { title:{cx:0.5,cy:0.17,w:0.75,h:0.10}, channel:{cx:0.5,cy:0.91,w:0.60,h:0.06} },
+  full:      { title:{cx:0.5,cy:0.06,w:0.75,h:0.10}, channel:{cx:0.5,cy:0.94,w:0.60,h:0.06} }
+};
+
+const $ = id => document.getElementById(id);
+
+// ── 초기화 ──
+document.addEventListener('DOMContentLoaded', () => {
+  // 저장된 키 로드
+  geminiKey    = localStorage.getItem('gemini_key')    || '';
+  ytKey        = localStorage.getItem('yt_key')        || '';
+  clipCount    = parseInt(localStorage.getItem('clip_count') || '6');
+  $('geminiKeyInput').value    = geminiKey;
+  $('ytKeyInput').value        = ytKey;
+  $('clipCountRange').value = clipCount;
+  $('clipCountVal').textContent = clipCount;
+  const chName = localStorage.getItem('channel_name') || '';
+  if (chName) $('channelName').value = chName;
+  // 저장된 폴더명 표시 (핸들은 세션마다 재선택 필요)
+  const savedDirName = localStorage.getItem('save_dir_name') || '';
+  if (savedDirName) $('saveDirDisplay').value = savedDirName + ' (재선택 필요)';
+  $('saveDirDisplay').title = '클릭해서 폴더 선택';
+
+  // 설정
+  $('settingsToggleBtn').addEventListener('click', () => $('settingsPanel').classList.toggle('open'));
+  $('toggleGemini').addEventListener('click',   () => { const i=$('geminiKeyInput');    i.type=i.type==='password'?'text':'password'; });
+  $('toggleYt').addEventListener('click',       () => { const i=$('ytKeyInput');         i.type=i.type==='password'?'text':'password'; });
+  $('saveSettingsBtn').addEventListener('click', saveSettings);
+  $('clipCountRange').addEventListener('input', () => { clipCount=parseInt($('clipCountRange').value); $('clipCountVal').textContent=clipCount; });
+
+  // Step1
+  $('startBtn').addEventListener('click', startPipeline);
+  $('urlInput').addEventListener('keydown', e => { if(e.key==='Enter') startPipeline(); });
+  $('resetBtn').addEventListener('click', resetApp);
+  $('cancelBtn').addEventListener('click', () => { if(abortController) abortController.abort(); resetApp(); });
+
+  // 수동 자막
+  $('manualAnalyzeBtn').addEventListener('click', startManualAnalysis);
+  $('manualCancelBtn').addEventListener('click', () => {
+    $('manualCaptionArea').classList.remove('show');
+    $('manualCaptionInput').value = '';
+  });
+
+  // 편집기
+  $('editorBackBtn').addEventListener('click', closeEditor);
+  $('editorExportBtn').addEventListener('click', () => doExport(editIdx));
+  $('editorVideoExportBtn').addEventListener('click', () => exportVideoClip(editIdx));
+
+  // 레이아웃
+  document.querySelectorAll('.layout-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      ovState.layout = btn.dataset.layout;
+      $('previewBox').className = `preview-box mode-${ovState.layout}`;
+      const def = DEFAULT_POS[ovState.layout];
+      Object.assign(ovState.title,   def.title);
+      Object.assign(ovState.channel, def.channel);
+      updateOverlay();
+    });
+  });
+
+  makeDraggable('ovTitle','title');
+  makeDraggable('ovChannel','channel');
+
+  $('editTitle').addEventListener('input', updateOverlay);
+  $('titleFont').addEventListener('change',  () => { ovState.title.font  = $('titleFont').value;  updateOverlay(); });
+  $('titleSize').addEventListener('input',   () => { ovState.title.size  = parseInt($('titleSize').value)||52; updateOverlay(); });
+  $('titleColor').addEventListener('input',  () => { ovState.title.color = $('titleColor').value; updateOverlay(); });
+  $('titleBold').addEventListener('click',   () => { ovState.title.bold  = !ovState.title.bold; $('titleBold').classList.toggle('on', ovState.title.bold); updateOverlay(); });
+  $('titleBgColor').addEventListener('input', () => {
+    ovState.title.bg = $('titleBgColor').value;
+    if (!ovState.title.bgOn) { ovState.title.bgOn = true; $('titleBgOn').classList.add('on'); $('titleBgOn').textContent = '배경 끄기'; }
+    updateOverlay();
+  });
+  $('titleBgOn').addEventListener('click', () => {
+    ovState.title.bgOn = !ovState.title.bgOn;
+    $('titleBgOn').classList.toggle('on', ovState.title.bgOn);
+    $('titleBgOn').textContent = ovState.title.bgOn ? '배경 끄기' : '배경 켜기';
+    updateOverlay();
+  });
+  $('channelBgColor').addEventListener('input', () => {
+    ovState.channel.bg = $('channelBgColor').value;
+    if (!ovState.channel.bgOn) { ovState.channel.bgOn = true; $('channelBgOn').classList.add('on'); $('channelBgOn').textContent = '배경 끄기'; }
+    updateOverlay();
+  });
+  $('channelBgOn').addEventListener('click', () => {
+    ovState.channel.bgOn = !ovState.channel.bgOn;
+    $('channelBgOn').classList.toggle('on', ovState.channel.bgOn);
+    $('channelBgOn').textContent = ovState.channel.bgOn ? '배경 끄기' : '배경 켜기';
+    updateOverlay();
+  });
+  window.addEventListener('resize', () => { if ($('editorOverlay').classList.contains('show')) updateOverlay(); });
+
+  $('showChannel').addEventListener('change',  () => { ovState.channel.show  = $('showChannel').checked; updateOverlay(); });
+  $('channelName').addEventListener('input',   () => { localStorage.setItem('channel_name',$('channelName').value); updateOverlay(); });
+  $('channelFont').addEventListener('change',  () => { ovState.channel.font  = $('channelFont').value; updateOverlay(); });
+  $('channelSize').addEventListener('input',   () => { ovState.channel.size  = parseInt($('channelSize').value)||36; updateOverlay(); });
+  $('channelColor').addEventListener('input',  () => { ovState.channel.color = $('channelColor').value; updateOverlay(); });
+
+  $('chkSafeZone').addEventListener('change', () => { $('guideSafe').style.display=$('chkSafeZone').checked?'block':'none'; });
+  $('chkGrid').addEventListener('change',     () => { $('guideGrid').style.display=$('chkGrid').checked?'block':'none'; });
+
+  document.querySelectorAll('.tbtn[data-target]').forEach(btn => {
+    btn.addEventListener('click', () => adjustTime(btn.dataset.target, parseFloat(btn.dataset.delta)));
+  });
+
+  $('addTagBtn').addEventListener('click', addTag);
+  $('newTagInput').addEventListener('keydown', e => { if(e.key==='Enter') addTag(); });
+
+  $('previewVideo').addEventListener('timeupdate', onTimeUpdate);
+  $('previewVideo').addEventListener('loadedmetadata', () => {
+    updateTimeline();
+    $('previewVideo').currentTime = editStart;
+  });
+  $('playClipBtn').addEventListener('click', () => { $('previewVideo').currentTime=editStart; $('previewVideo').play(); });
+  // YouTube 임베드 미리보기 컨트롤
+  $('ytSeekBtn').addEventListener('click', () => {
+    if (!currentVideoId) return;
+    $('ytPreview').src = `https://www.youtube-nocookie.com/embed/${currentVideoId}?start=${Math.max(0, Math.floor(editStart))}&autoplay=1&rel=0`;
+  });
+  $('ytLoadFileBtn').addEventListener('click', () => $('videoFileInput').click());
+  $('pauseBtn').addEventListener('click', () => $('previewVideo').pause());
+
+  // 비디오 파일 드롭존
+  const dz = $('videoDropzone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (!f) return;
+    // MIME 타입이 비어있는 영상 파일(MOV/MKV 등)도 확장자로 허용
+    const isVideo = f.type.startsWith('video/') || /\.(mp4|mov|mkv|avi|webm|m4v)$/i.test(f.name);
+    if (isVideo) loadVideoFile(f);
+    else toast('영상 파일만 불러올 수 있습니다.', 'error');
+  });
+  $('videoFileInput').addEventListener('change', e => { const f=e.target.files[0]; if(f) loadVideoFile(f); });
+
+  initTimelineHandles();
+  $('titleBold').classList.add('on');
+  $('copyTsBtn').addEventListener('click', copyTimestamps);
+  $('copyTagsBtn').addEventListener('click', copyTags);
+});
+
+// ── 저장 폴더 선택 ──
+async function pickSaveDir() {
+  if (!window.showDirectoryPicker) {
+    toast('이 브라우저는 폴더 선택을 지원하지 않습니다. Chrome/Edge를 사용하세요.', 'error', 4000);
+    return;
+  }
+  try {
+    saveDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    localStorage.setItem('save_dir_name', saveDirHandle.name);
+    $('saveDirDisplay').value = saveDirHandle.name;
+    toast('📁 폴더 설정됨: ' + saveDirHandle.name, 'success');
+  } catch (e) {
+    if (e.name !== 'AbortError') toast('폴더 선택 실패: ' + e.message, 'error');
+  }
+}
+function clearSaveDir() {
+  saveDirHandle = null;
+  localStorage.removeItem('save_dir_name');
+  $('saveDirDisplay').value = '';
+  toast('폴더 설정이 해제되었습니다.', 'info');
+}
+
+// ── 폴더에 텍스트 파일 저장 ──
+async function saveTextToDir(filename, text) {
+  if (!saveDirHandle) return false;
+  try {
+    const fileHandle = await saveDirHandle.getFileHandle(filename, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(text);
+    await writable.close();
+    return true;
+  } catch (e) {
+    toast('파일 저장 실패: ' + e.message, 'error');
+    return false;
+  }
+}
+
+// ── 설정 저장 ──
+function saveSettings() {
+  geminiKey    = $('geminiKeyInput').value.trim();
+  ytKey        = $('ytKeyInput').value.trim();
+  localStorage.setItem('gemini_key',    geminiKey);
+  localStorage.setItem('yt_key',        ytKey);
+  localStorage.setItem('clip_count',    clipCount);
+  const m = $('saveMsg'); m.textContent = '✓ 저장됨';
+  setTimeout(() => { m.textContent=''; }, 2000);
+  toast('설정이 저장되었습니다.', 'success');
+}
+
+// ── URL에서 video ID 추출 ──
+function extractVideoId(url) {
+  const patterns = [
+    /[?&]v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+// ── YouTube Data API: 영상 정보 가져오기 ──
+async function fetchVideoInfo(videoId) {
+  if (!ytKey) return null;
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoId}&key=${ytKey}`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.items?.length) return null;
+    const item = data.items[0];
+    const dur = item.contentDetails?.duration || '';
+    const durSec = parseDuration(dur);
+    return {
+      id: videoId,
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle,
+      thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '',
+      duration: durSec,
+      views: parseInt(item.statistics?.viewCount || 0)
+    };
+  } catch { return null; }
+}
+
+function parseDuration(iso) {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return 0;
+  return (parseInt(m[1]||0)*3600) + (parseInt(m[2]||0)*60) + parseInt(m[3]||0);
+}
+
+// ── 다중 CORS 프록시 순차 시도 (하나 죽어도 다음으로 넘어감) ──
+// allorigins가 현재 유일하게 YouTube 접근이 되는 프록시라 1순위 (단, 간헐적 522 → 2라운드 재시도)
+const CORS_PROXIES = [
+  {
+    name: 'allorigins',
+    build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    parse: async r => await r.text()
+  },
+  {
+    name: 'corsproxy.io',
+    build: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+    parse: async r => await r.text()
+  },
+  {
+    name: 'codetabs',
+    build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+    parse: async r => await r.text()
+  }
+];
+
+// validate: 응답 내용 검증 함수(차단 페이지·축소판 페이지 거르기). 실패하면 다음 프록시/라운드로.
+async function fetchViaProxy(targetUrl, validate = null, rounds = 2) {
+  for (let round = 1; round <= rounds; round++) {
+    for (const p of CORS_PROXIES) {
+      try {
+        const res = await fetch(p.build(targetUrl), { signal: reqSignal(20000) });
+        if (!res.ok) { log(`⚠️ ${p.name}: HTTP ${res.status}`); continue; }
+        const text = await p.parse(res);
+        if (!text || text.length <= 10) { log(`⚠️ ${p.name}: 빈 응답`); continue; }
+        if (validate && !validate(text)) { log(`⚠️ ${p.name}: 차단/불완전 응답 → 재시도`); continue; }
+        return text;
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+        log(`⚠️ ${p.name}: ${e.message || '실패'}`);
+      }
+    }
+  }
+  return null;
+}
+
+function parseTimedText(data) {
+  return data.events
+    .filter(e => e.segs && e.segs.some(s => s.utf8?.trim()))
+    .map(e => ({
+      start: e.tStartMs / 1000,
+      end: (e.tStartMs + (e.dDurationMs || 3000)) / 1000,
+      text: e.segs.map(s => s.utf8 || '').join('').trim()
+    }))
+    .filter(s => s.text && s.text !== '\n');
+}
+
+// YouTube 페이지 HTML에서 captionTracks 배열 추출 (인증 토큰 포함된 URL)
+function extractCaptionTracksFromPage(html) {
+  try {
+    const key = '"captionTracks":';
+    const idx = html.indexOf(key);
+    if (idx < 0) return [];
+    let pos = idx + key.length;
+    let depth = 0, inStr = false, esc = false;
+    const from = pos;
+    while (pos < html.length) {
+      const c = html[pos];
+      if (esc) { esc = false; }
+      else if (c === '\\' && inStr) { esc = true; }
+      else if (c === '"') { inStr = !inStr; }
+      else if (!inStr) {
+        if (c === '[') depth++;
+        else if (c === ']') { depth--; if (depth === 0) { pos++; break; } }
+      }
+      pos++;
+    }
+    const arr = JSON.parse(html.slice(from, pos));
+    return arr
+      .map(t => ({ baseUrl: t.baseUrl, languageCode: t.languageCode }))
+      .filter(t => t.baseUrl && t.languageCode);
+  } catch { return []; }
+}
+
+// ── Invidious: 런타임에 api.invidious.io 에서 살아있는 인스턴스 자동 탐색 ──
+const INVIDIOUS_FALLBACK = [
+  'https://inv.nadeko.net',
+  'https://inv.thepixora.com',
+  'https://invidious.nerdvpn.de',
+  'https://invidious.tiekoetter.com',
+];
+let _invidiousCache = null;
+
+// 전역 취소(abortController) + 개별 타임아웃을 합친 signal
+// 타임아웃은 'TimeoutError', 사용자 취소는 'AbortError'로 구분됨
+function reqSignal(ms) {
+  const signals = [AbortSignal.timeout(ms)];
+  if (abortController) signals.push(abortController.signal);
+  return AbortSignal.any(signals);
+}
+
+async function getInvidiousInstances() {
+  if (_invidiousCache) return _invidiousCache;
+  try {
+    log('📡 Invidious 인스턴스 자동 탐색 중...');
+    const res = await fetch('https://api.invidious.io/instances.json?sort_by=health', { signal: reqSignal(6000) });
+    if (res.ok) {
+      const data = await res.json();
+      // instances.json 형식: [["yewtu.be", {uri:"https://yewtu.be", api:true, cors:true, type:"https", ...}], ...]
+      const active = data
+        .filter(e => Array.isArray(e) && e[1] && e[1].type === 'https' && e[1].api === true && e[1].cors === true && typeof e[1].uri === 'string')
+        .map(e => e[1].uri.replace(/\/+$/, ''))
+        .slice(0, 8);
+      if (active.length >= 2) {
+        log(`📡 Invidious 인스턴스 ${active.length}개 자동 발견`);
+        _invidiousCache = active;
+        return active;
+      }
+    }
+  } catch (e) { if (e.name === 'AbortError') throw e; }
+  log('📡 Invidious 백업 목록 사용');
+  _invidiousCache = INVIDIOUS_FALLBACK;
+  return INVIDIOUS_FALLBACK;
+}
+
+function parseVTT(vttText) {
+  const segs = [];
+  const lines = vttText.split('\n');
+  // HH:MM:SS.mmm 표준형 + MM:SS.mmm 단축형 모두 지원
+  const cueRe = /^((?:\d+:)?\d+:\d+[.,]\d+)\s+-->\s+((?:\d+:)?\d+:\d+[.,]\d+)/;
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(cueRe);
+    if (m) {
+      const start = parseVTTTime(m[1]), end = parseVTTTime(m[2]);
+      const textLines = []; i++;
+      while (i < lines.length && lines[i].trim() && !/^(?:\d+:)?\d+:\d+[.,]\d+\s+-->/.test(lines[i]) && !/^\d+$/.test(lines[i].trim())) {
+        textLines.push(lines[i].replace(/<[^>]+>/g, '')); i++;
+      }
+      const text = textLines.join(' ').trim();
+      if (text) segs.push({ start, end, text });
+      i--;
+    }
+  }
+  return segs;
+}
+function parseVTTTime(ts) {
+  const p = ts.replace(',','.').split(':').map(parseFloat);
+  if (p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
+  if (p.length === 2) return p[0]*60 + p[1];
+  return p[0] || 0;
+}
+
+// ── TTML(XML) 자막 파싱: <p begin="00:00:01.000" end="00:00:02.500">텍스트</p> ──
+function parseTTML(xml) {
+  const segs = [];
+  const re = /<p[^>]*\bbegin="([^"]+)"[^>]*\bend="([^"]+)"[^>]*>([\s\S]*?)<\/p>/g;
+  let m;
+  while ((m = re.exec(xml)) !== null) {
+    const text = m[3]
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+      .replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&nbsp;/g,' ')
+      .replace(/\s+/g,' ').trim();
+    if (!text) continue;
+    segs.push({ start: parseTTMLTime(m[1]), end: parseTTMLTime(m[2]), text });
+  }
+  return segs;
+}
+function parseTTMLTime(t) {
+  if (/^[\d.]+s$/.test(t)) return parseFloat(t);  // "12.34s" 오프셋형
+  return parseVTTTime(t);                          // "HH:MM:SS.mmm" 시계형
+}
+
+// ── Piped API: 자막 수집 1순위 ──
+// 2025년 YouTube의 PO 토큰 정책 이후, timedtext 직접 호출·Invidious 자막 내용이 빈 응답을
+// 반환하는 경우가 많음. Piped는 서버측 프록시로 자막 내용까지 정상 전달함 (CORS: *)
+const PIPED_FALLBACK = [
+  'https://api.piped.private.coffee',
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.adminforge.de',
+];
+let _pipedCache = null;
+
+async function getPipedInstances() {
+  if (_pipedCache) return _pipedCache;
+  let found = [];
+  try {
+    log('📡 Piped 인스턴스 자동 탐색 중...');
+    const res = await fetch('https://piped-instances.kavin.rocks/', { signal: reqSignal(6000) });
+    if (res.ok) {
+      const data = await res.json();
+      found = data
+        .filter(d => typeof d.api_url === 'string' && d.api_url.startsWith('https://'))
+        .map(d => d.api_url.replace(/\/+$/, ''));
+      if (found.length) log(`📡 Piped 인스턴스 ${found.length}개 자동 발견`);
+    }
+  } catch (e) { if (e.name === 'AbortError') throw e; }
+  _pipedCache = [...new Set([...found, ...PIPED_FALLBACK])];
+  return _pipedCache;
+}
+
+async function fetchCaptionsViaPiped(videoId) {
+  const instances = await getPipedInstances();
+  for (const inst of instances.slice(0, 5)) {
+    try {
+      log(`📡 Piped: ${inst.replace('https://','')}`);
+      const res = await fetch(`${inst}/streams/${videoId}`, { signal: reqSignal(12000) });
+      if (!res.ok) { log(`⚠️ HTTP ${res.status}`); continue; }
+      const data = await res.json();
+      const subs = Array.isArray(data.subtitles) ? data.subtitles.filter(s => s.url) : [];
+      if (!subs.length) { log('⚠️ 이 영상엔 자막 없음'); continue; }
+      log(`🔍 ${subs.length}개 자막 트랙 발견`);
+      const pref = ['ko','en','ja'];
+      subs.sort((a, b) => {
+        const ai = pref.findIndex(p => (a.code||'').startsWith(p));
+        const bi = pref.findIndex(p => (b.code||'').startsWith(p));
+        if (ai !== bi) return (ai<0?99:ai) - (bi<0?99:bi);
+        return (a.autoGenerated?1:0) - (b.autoGenerated?1:0); // 같은 언어면 수동 자막 우선
+      });
+      for (const sub of subs.slice(0, 4)) {
+        try {
+          log(`🔍 자막 다운로드: ${sub.code}${sub.autoGenerated ? ' (자동생성)' : ''}`);
+          const capRes = await fetch(sub.url, { signal: reqSignal(12000) });
+          if (!capRes.ok) continue;
+          const body = await capRes.text();
+          const segs = (body.includes('<tt') || body.includes('<timedtext')) ? parseTTML(body)
+                     : body.includes('-->') ? parseVTT(body)
+                     : [];
+          if (segs.length > 5) { log(`✅ Piped 자막 로드 (${sub.code}): ${segs.length}개`); return segs; }
+        } catch (e) { if (e.name==='AbortError') throw e; }
+      }
+    } catch (e) {
+      if (e.name==='AbortError') throw e;
+      log(`⚠️ ${inst.replace('https://','')}: ${e.message || '연결 실패'}`);
+    }
+  }
+  return null;
+}
+
+async function fetchCaptionsViaInvidious(videoId) {
+  const instances = await getInvidiousInstances();
+  let emptyContentCount = 0; // 목록은 오는데 내용이 빈 인스턴스 수 (YouTube PO 토큰 문제 감지용)
+  for (const inst of instances.slice(0, 5)) {
+    try {
+      log(`📡 Invidious: ${inst.replace('https://','')}`);
+      const listRes = await fetch(`${inst}/api/v1/captions/${videoId}`, {
+        headers: { 'Accept': 'application/json' },
+        signal: reqSignal(8000)
+      });
+      if (!listRes.ok) { log(`⚠️ HTTP ${listRes.status}`); continue; }
+      const listData = await listRes.json();
+      // 응답 형식: {"captions":[{label, languageCode, url}, ...]} (구버전은 배열일 수도 있음)
+      const tracks = Array.isArray(listData) ? listData : (listData.captions || []);
+      if (!tracks.length) { log('⚠️ 이 영상엔 자막 없음'); continue; }
+      log(`🔍 ${tracks.length}개 자막 트랙 발견`);
+      const pref = ['ko','Korean','en','English','ja'];
+      const langOf = t => t.languageCode || t.language_code || '';
+      tracks.sort((a, b) => {
+        const ai = pref.findIndex(p => langOf(a)===p || a.label?.startsWith(p));
+        const bi = pref.findIndex(p => langOf(b)===p || b.label?.startsWith(p));
+        return (ai<0?99:ai) - (bi<0?99:bi);
+      });
+      let gotContent = false;
+      for (const track of tracks.slice(0, 3)) {
+        try {
+          log(`🔍 자막 다운로드: ${track.label || langOf(track)}`);
+          const capUrl = /^https?:\/\//.test(track.url) ? track.url : `${inst}${track.url}`;
+          const capRes = await fetch(capUrl, { signal: reqSignal(10000) });
+          if (!capRes.ok) continue;
+          const vtt = await capRes.text();
+          if (vtt.length > 20) gotContent = true;
+          const segs = parseVTT(vtt);
+          if (segs.length > 5) { log(`✅ Invidious 자막 로드 (${track.label}): ${segs.length}개`); return segs; }
+        } catch (e) { if (e.name==='AbortError') throw e; }
+      }
+      if (!gotContent) {
+        emptyContentCount++;
+        if (emptyContentCount >= 2) { log('⚠️ Invidious 자막 내용이 비어있음 (YouTube 차단) → 다음 방법으로'); break; }
+      }
+    } catch (e) {
+      if (e.name==='AbortError') throw e;
+      log(`⚠️ ${inst.replace('https://','')}: ${e.message || '연결 실패'}`);
+    }
+  }
+  return null;
+}
+
+// ── 자막 가져오기 (5단계 폴백) ──
+async function fetchCaptions(videoId) {
+  // 방법 1: Piped API — 자막 내용까지 서버측 프록시로 전달, 현재 가장 안정적
+  log('📡 Piped API로 자막 수집 시도 중...');
+  const pipedSegs = await fetchCaptionsViaPiped(videoId);
+  if (pipedSegs) return pipedSegs;
+
+  // 방법 2: Invidious API — CORS 허용, 프록시 불필요
+  log('📡 Invidious API로 자막 수집 시도 중...');
+  const invSegs = await fetchCaptionsViaInvidious(videoId);
+  if (invSegs) return invSegs;
+
+  // 방법 3: YouTube 페이지 파싱 → 인증 토큰 포함된 자막 URL 추출
+  // (차단 페이지가 자주 섞여 오므로 captionTracks 포함 여부를 검증하며 재시도)
+  log('🔍 YouTube 페이지 파싱으로 자막 URL 추출 시도...');
+  try {
+    const pageHtml = await fetchViaProxy(
+      `https://www.youtube.com/watch?v=${videoId}`,
+      h => h.includes('"captionTracks":'),
+      3
+    );
+    if (pageHtml) {
+      const tracks = extractCaptionTracksFromPage(pageHtml);
+      if (tracks.length > 0) {
+        log(`🔍 자막 트랙 ${tracks.length}개 발견`);
+        const order = ['ko','en','ja'];
+        tracks.sort((a,b) => { const ai=order.indexOf(a.languageCode),bi=order.indexOf(b.languageCode); return (ai<0?99:ai)-(bi<0?99:bi); });
+        for (const track of tracks.slice(0,3)) {
+          try {
+            const text = await fetchViaProxy(track.baseUrl + '&fmt=json3', null, 1);
+            if (!text) continue;
+            let data; try { data = JSON.parse(text); } catch { continue; }
+            if (!data.events?.length) continue;
+            const segs = parseTimedText(data);
+            if (segs.length > 5) { log(`✅ 페이지 파싱 자막 로드 (${track.languageCode}): ${segs.length}개`); return segs; }
+          } catch (e) { if (e.name==='AbortError') throw e; }
+        }
+      }
+    }
+  } catch (e) { if (e.name==='AbortError') throw e; }
+
+  // 방법 4: timedtext API + CORS 프록시 (대부분 차단되지만 마지막 시도)
+  log('🔍 timedtext API + 프록시 시도...');
+  for (const kind of ['','asr']) {
+    for (const lang of ['ko','en']) {
+      try {
+        const url = `https://www.youtube.com/api/timedtext?lang=${lang}&v=${videoId}&fmt=json3${kind?'&kind=asr':''}`;
+        const text = await fetchViaProxy(url, null, 1);
+        if (!text) continue;
+        let data; try { data = JSON.parse(text); } catch { continue; }
+        if (!data.events?.length) continue;
+        const segs = parseTimedText(data);
+        if (segs.length > 5) { log(`✅ 자막 로드 (${lang}): ${segs.length}개`); return segs; }
+      } catch (e) { if (e.name==='AbortError') throw e; }
+    }
+  }
+
+  return null; // 실패 → 수동 입력으로 fallback (방법 5)
+}
+
+// ── Gemini AI 클립 분석 ──
+async function analyzeClips(segments) {
+  if (!geminiKey) throw new Error('Gemini API 키를 설정에서 입력해주세요.');
+  const transcript = segments
+    .map(s => `[${formatTime(s.start)} ~ ${formatTime(s.end)}] ${s.text}`)
+    .join('\n')
+    .slice(0, 100000);
+
+  const systemPrompt = `당신은 유튜브 숏츠 편집 전문가입니다. 롱폼 영상의 자막을 분석해서 숏츠로 만들기 좋은 후킹(hooking) 구간을 찾아내세요.
+
+선택 기준:
+- 강한 감정적 반응이 예상되는 순간
+- 놀라운 사실이나 반전이 있는 구간
+- 핵심 인사이트나 팁이 압축된 구간
+- 웃음이나 공감을 유발하는 구간
+- 완결된 이야기 구조가 있는 구간
+
+⚠️ 클립 길이 규칙 (매우 중요):
+- 목표 길이: 30초~60초 (유튜브 숏츠 최적)
+- 최대 길이: 90초 초과 금지
+
+반드시 JSON 배열로만 응답하세요:
+[{"rank":1,"start":초,"end":초,"title":"제목(30자 이내)","hook":"이유(50자 이내)","hashtags":["태그1","태그2","태그3","태그4","태그5"]}]`;
+
+  const body = {
+    contents: [{ parts: [{ text: `다음 YouTube 영상 자막에서 숏츠로 만들기 좋은 구간 ${clipCount}개를 추천해주세요.\n\n${transcript}` }] }],
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    generationConfig: { temperature: 0.4, maxOutputTokens: 16384, responseMimeType: 'application/json' }
+  };
+
+  // 1순위는 gemini-3.5-flash. 모델이 없어졌을 때(404)만 다음 후보로 자동 폴백.
+  const GEMINI_MODELS = ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
+  let res = null, lastErr = null;
+  for (const model of GEMINI_MODELS) {
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body), signal:abortController?.signal }
+    );
+    if (res.ok) { if (model !== GEMINI_MODELS[0]) log(`ℹ️ 모델 폴백: ${model} 사용`); break; }
+    let e = {}; try { e = await res.json(); } catch {}
+    lastErr = new Error(e.error?.message || `Gemini API 오류 (${res.status})`);
+    if (res.status !== 404) throw lastErr;           // 키 오류·쿼터 초과 등은 즉시 중단
+    log(`⚠️ 모델 ${model} 없음(404) → 다음 모델 시도`);
+    res = null;
+  }
+  if (!res) throw lastErr || new Error('사용 가능한 Gemini 모델을 찾지 못했습니다.');
+  const data = await res.json();
+  const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+
+  // 응답이 잘린 경우 완성된 객체만 추출
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const arrayStart = cleaned.indexOf('[');
+    if (arrayStart < 0) throw new Error('Gemini 응답에서 JSON을 찾을 수 없습니다.');
+    let depth = 0, lastComplete = -1, inStr = false, esc = false;
+    for (let i = arrayStart; i < cleaned.length; i++) {
+      const c = cleaned[i];
+      if (esc) { esc = false; continue; }
+      if (c === '\\' && inStr) { esc = true; continue; }
+      if (c === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) lastComplete = i; }
+    }
+    if (lastComplete < 0) throw new Error('완성된 클립 정보를 찾을 수 없습니다.');
+    parsed = JSON.parse(cleaned.slice(arrayStart, lastComplete + 1) + ']');
+  }
+  // 객체로 감싸서 응답한 경우({"clips":[...]} 등) 내부 배열을 꺼냄
+  if (!Array.isArray(parsed)) {
+    const arr = Object.values(parsed).find(v => Array.isArray(v));
+    if (!arr) throw new Error('Gemini 응답이 클립 배열 형식이 아닙니다.');
+    parsed = arr;
+  }
+  const result = parsed
+    .map(c => ({ ...c, start:Number(c.start), end:Number(c.end), duration:Number(c.end)-Number(c.start) }))
+    .filter(c => isFinite(c.start) && isFinite(c.end) && c.end > c.start && c.title);
+  if (!result.length) throw new Error('유효한 클립을 추천받지 못했습니다. 다시 시도해주세요.');
+  return result;
+}
+
+// ── 파이프라인 시작 ──
+async function startPipeline() {
+  const url = $('urlInput').value.trim();
+  if (!url) { toast('YouTube URL을 입력하세요.', 'error'); return; }
+  geminiKey = $('geminiKeyInput').value.trim() || localStorage.getItem('gemini_key') || '';
+  ytKey     = $('ytKeyInput').value.trim()     || localStorage.getItem('yt_key')     || '';
+  if (!geminiKey) {
+    toast('⚙️ 설정에서 Gemini API 키를 먼저 입력해주세요.', 'error');
+    $('settingsPanel').classList.add('open');
+    return;
+  }
+  const videoId = extractVideoId(url);
+  if (!videoId) { toast('올바른 YouTube URL을 입력해주세요.', 'error'); return; }
+  currentVideoId = videoId;
+
+  abortController = new AbortController();
+  $('step1').style.display = 'none';
+  $('step2').style.display = 'block';
+  $('step3').style.display = 'none';
+  $('logBox').innerHTML = '';
+  $('manualCaptionArea').classList.remove('show');
+  pipe('fetch','','대기');
+  pipe('analyze','','대기');
+  // 이전 분석의 영상 정보가 남지 않도록 초기화
+  videoInfo = null;
+  $('videoInfoBar').style.display = 'none';
+  $('videoInfoBar2').style.display = 'none';
+
+  try {
+    // YouTube 영상 정보
+    if (ytKey) {
+      log('📺 영상 정보 불러오는 중...');
+      videoInfo = await fetchVideoInfo(videoId);
+      if (videoInfo) {
+        showVideoInfo(videoInfo, 'videoInfoBar', 'videoThumb', 'videoTitleMeta', 'videoDetailMeta');
+        log(`✅ "${videoInfo.title}" (${formatTime(videoInfo.duration)})`);
+      }
+    }
+
+    // 자막 수집
+    pipe('fetch','active','자막 수집 중...');
+    log('📋 자막 수집 중...');
+    segments = await fetchCaptions(videoId);
+
+    if (!segments || segments.length < 5) {
+      log('⚠️ 자동 자막을 불러올 수 없습니다. 수동 입력 모드로 전환합니다.');
+      $('step2').style.display = 'none';
+      $('step1').style.display = 'block';
+      $('manualCaptionArea').classList.add('show');
+      pipe('fetch','error','자막 없음');
+      return;
+    }
+    pipe('fetch','done',`${segments.length}개`);
+
+    // AI 분석
+    pipe('analyze','active','분석 중...');
+    log(`🤖 Gemini AI 분석 중... (${segments.length}개 세그먼트)`);
+    clips = await analyzeClips(segments);
+    pipe('analyze','done',`${clips.length}개 추천`);
+    log(`✅ 분석 완료! 클립 ${clips.length}개 추천`);
+
+    showClips();
+  } catch (e) {
+    if (e.name === 'AbortError') { log('취소됨'); resetApp(); return; }
+    log(`❌ 오류: ${e.message}`);
+    toast('오류: ' + e.message, 'error');
+    ['fetch','analyze'].forEach(s => { if($(`pipe-${s}`).classList.contains('active')) pipe(s,'error','실패'); });
+  }
+}
+
+// ── 수동 자막 분석 ──
+async function startManualAnalysis() {
+  const text = $('manualCaptionInput').value.trim();
+  if (!text || text.length < 50) { toast('자막 텍스트를 입력해주세요.', 'error'); return; }
+  geminiKey = $('geminiKeyInput').value.trim() || localStorage.getItem('gemini_key') || '';
+  if (!geminiKey) { toast('Gemini API 키를 먼저 입력해주세요.', 'error'); $('settingsPanel').classList.add('open'); return; }
+
+  // 텍스트를 segments 형식으로 파싱
+  const lines = text.split('\n').filter(l => l.trim());
+  segments = [];
+  let timeCounter = 0;
+  for (const line of lines) {
+    const tsMatch = line.match(/\[(\d+):(\d+)\]|^(\d+):(\d+)/);
+    if (tsMatch) {
+      const m = tsMatch[1]!=null ? [tsMatch[1],tsMatch[2]] : [tsMatch[3],tsMatch[4]];
+      timeCounter = parseInt(m[0])*60 + parseInt(m[1]);
+      const txt = line.replace(/^\[?\d+:\d+\]?\s*/,'').trim();
+      if (txt) segments.push({ start:timeCounter, end:timeCounter+4, text:txt });
+    } else {
+      segments.push({ start:timeCounter, end:timeCounter+4, text:line.trim() });
+      timeCounter += 4;
+    }
+  }
+  if (!segments.length) segments = [{ start:0, end:text.length/10, text }];
+
+  abortController = new AbortController();
+  $('step1').style.display = 'none';
+  $('step2').style.display = 'block';
+  $('logBox').innerHTML = '';
+  pipe('fetch','done',`${segments.length}개`);
+  pipe('analyze','active','분석 중...');
+  log(`🤖 Gemini AI 분석 중... (${segments.length}개 세그먼트)`);
+
+  try {
+    clips = await analyzeClips(segments);
+    pipe('analyze','done',`${clips.length}개 추천`);
+    log(`✅ 분석 완료! 클립 ${clips.length}개`);
+    showClips();
+  } catch (e) {
+    if (e.name === 'AbortError') { log('취소됨'); resetApp(); return; }
+    log(`❌ 오류: ${e.message}`);
+    toast('오류: ' + e.message, 'error');
+    pipe('analyze','error','실패');
+  }
+}
+
+// ── 영상 정보 표시 ──
+function showVideoInfo(info, barId, thumbId, titleId, detailId) {
+  const bar = $(barId);
+  if (!bar) return;
+  bar.style.display = 'flex';
+  $(thumbId).src = info.thumb;
+  $(titleId).textContent = info.title;
+  $(detailId).textContent = `${info.channel}  •  ${formatTime(info.duration)}  •  조회수 ${info.views.toLocaleString()}회`;
+}
+
+// ── 클립 목록 표시 ──
+function showClips() {
+  $('step2').style.display = 'none';
+  $('step3').style.display = 'block';
+  $('clipCount').textContent = clips.length;
+  if (videoInfo) showVideoInfo(videoInfo,'videoInfoBar2','videoThumb2','videoTitleMeta2','videoDetailMeta2');
+
+  const grid = $('clipsGrid');
+  grid.innerHTML = '';
+  clips.forEach((clip, idx) => {
+    const card = document.createElement('div');
+    card.className = 'clip-card';
+    const tags = (clip.hashtags||[]).map(t=>`<span class="clip-tag">#${esc(t)}</span>`).join('');
+    card.innerHTML = `
+      <div class="clip-rank">${clip.rank||idx+1}</div>
+      <div class="clip-body">
+        <div class="clip-title">${esc(clip.title)}</div>
+        <div class="clip-meta">
+          <span class="clip-time">${formatTime(clip.start)} ~ ${formatTime(clip.end)}</span>
+          <span class="clip-duration">⏱ ${fd(clip.end-clip.start)}</span>
+        </div>
+        <div class="clip-hook">💡 ${esc(clip.hook||'')}</div>
+        <div class="clip-tags">${tags}</div>
+      </div>
+      <div class="clip-actions">
+        <button class="btn btn-success btn-sm" id="eb-${idx}">✏️ 편집</button>
+      </div>`;
+    grid.appendChild(card);
+    card.querySelector(`#eb-${idx}`).addEventListener('click', e => { e.stopPropagation(); openEditor(idx); });
+    card.addEventListener('click', () => openEditor(idx));
+  });
+}
+
+// ── 편집기 열기 ──
+function openEditor(idx) {
+  editIdx = idx;
+  const clip = clips[idx];
+  editStart = clip.start;
+  editEnd = clip.end;
+  editTags = [...(clip.hashtags||[])];
+
+  $('editTitle').value = clip.title;
+  $('editHook').textContent = clip.hook ? '💡 ' + clip.hook : '';
+  updateTimeDisplays();
+  renderTags();
+  const def = DEFAULT_POS[ovState.layout];
+  Object.assign(ovState.title,   def.title);
+  Object.assign(ovState.channel, def.channel);
+  $('exportSection').style.display = 'none';
+  $('editorLabel').textContent = `클립 ${idx+1} 편집`;
+  $('editorExportBtn').textContent = '✂️ 타임스탬프 저장';
+  $('editorVideoExportBtn').textContent = '🎬 MP4 추출';
+  // 영상 파일이 없으면: YouTube 임베드로 미리보기 (영상 ID를 알 때) / 아니면 썸네일·안내문
+  if (!videoLoaded) {
+    if (currentVideoId) {
+      $('ytPreview').src = `https://www.youtube-nocookie.com/embed/${currentVideoId}?start=${Math.max(0, Math.floor(editStart))}&rel=0`;
+      $('ytPreview').style.display = 'block';
+      $('videoDropzone').style.display = 'none';
+      $('ytPreviewControls').style.display = 'flex';
+      $('previewThumbBg').style.display = 'none';
+    } else {
+      $('ytPreview').style.display = 'none';
+      $('ytPreviewControls').style.display = 'none';
+      $('videoDropzone').style.display = 'flex';
+      const thumb = videoInfo && videoInfo.thumb;
+      $('previewThumbBg').style.display = thumb ? 'block' : 'none';
+      if (thumb) $('previewThumbBg').src = thumb;
+    }
+  }
+  $('editorOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  // 미리보기 박스가 화면에 나타난 뒤에 크기를 계산해야 함 (이전엔 clientWidth=0)
+  updateOverlay();
+
+  // 비디오가 이미 로드됐으면 현재 클립 위치로 이동
+  if (videoLoaded) {
+    $('previewVideo').currentTime = editStart;
+    updateTimeline();
+  }
+}
+
+function closeEditor() {
+  $('editorOverlay').classList.remove('show');
+  $('previewVideo').pause();
+  $('ytPreview').src = ''; // 닫은 뒤에도 소리가 계속 나지 않도록 정지
+  document.body.style.overflow = '';
+}
+
+// ── 비디오 파일 로드 ──
+function loadVideoFile(file) {
+  videoFile = file;
+  const video = $('previewVideo');
+  if (video.src && video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
+  video.src = URL.createObjectURL(file);
+  video.style.display = 'block';
+  videoLoaded = true;
+  $('videoDropzone').style.display = 'none';
+  $('previewThumbBg').style.display = 'none';
+  $('ytPreview').src = '';
+  $('ytPreview').style.display = 'none';
+  $('ytPreviewControls').style.display = 'none';
+  $('playerControls').style.display = 'flex';
+  $('timelineWrap').style.display = 'flex';
+  toast(`🎬 ${file.name} 로드됨`, 'success');
+}
+
+// ── 오버레이 ──
+// 텍스트는 내부 span에 넣음 — 컨테이너에 textContent를 쓰면 리사이즈 핸들이 지워짐
+function ovTextEl(el) {
+  let s = el.querySelector('.ov-text');
+  if (!s) { s = document.createElement('span'); s.className = 'ov-text'; el.insertBefore(s, el.firstChild); }
+  return s;
+}
+function updateOverlay() {
+  const box = $('previewBox');
+  const scale = box.clientWidth / 1080;
+  const titleEl = $('ovTitle');
+  const titleText = $('editTitle').value;
+  ovTextEl(titleEl).textContent = titleText;
+  titleEl.style.display = titleText ? 'inline-flex' : 'none';
+  titleEl.style.fontFamily = ovState.title.font;
+  titleEl.style.fontSize = (ovState.title.size * scale) + 'px';
+  titleEl.style.color = ovState.title.color;
+  titleEl.style.fontWeight = ovState.title.bold ? '700' : '400';
+  titleEl.style.background = ovState.title.bgOn ? ovState.title.bg : 'transparent';
+  const chEl = $('ovChannel');
+  const chText = $('channelName').value;
+  const showCh = $('showChannel').checked && chText;
+  ovTextEl(chEl).textContent = chText;
+  chEl.style.display = showCh ? 'inline-flex' : 'none';
+  chEl.style.fontFamily = ovState.channel.font;
+  chEl.style.fontSize = (ovState.channel.size * scale) + 'px';
+  chEl.style.color = ovState.channel.color;
+  chEl.style.background = ovState.channel.bgOn ? ovState.channel.bg : 'transparent';
+  positionOverlays();
+}
+function positionOverlays() {
+  const box = $('previewBox');
+  const bw = box.clientWidth, bh = box.clientHeight;
+  for (const [elId,key] of [['ovTitle','title'],['ovChannel','channel']]) {
+    const el = $(elId);
+    el.style.left   = (ovState[key].cx * bw) + 'px';
+    el.style.top    = (ovState[key].cy * bh) + 'px';
+    el.style.width  = (ovState[key].w  * bw) + 'px';
+    el.style.height = (ovState[key].h  * bh) + 'px';
+  }
+}
+function makeDraggable(elId, posKey) {
+  const el = $(elId);
+  let dragging=false, startMX, startMY, startCX, startCY;
+  el.addEventListener('mousedown', e => {
+    if(e.target.classList.contains('rhandle')) return;
+    dragging=true; startMX=e.clientX; startMY=e.clientY;
+    startCX=ovState[posKey].cx; startCY=ovState[posKey].cy;
+    $('ytPreview').style.pointerEvents = 'none'; // 드래그 중 iframe이 마우스를 삼키지 않도록
+    e.preventDefault(); e.stopPropagation();
+  });
+  document.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    const box=$('previewBox'), bw=box.clientWidth, bh=box.clientHeight;
+    ovState[posKey].cx = Math.max(0.05,Math.min(0.95,startCX+(e.clientX-startMX)/bw));
+    ovState[posKey].cy = Math.max(0.02,Math.min(0.98,startCY+(e.clientY-startMY)/bh));
+    positionOverlays();
+  });
+  document.addEventListener('mouseup', () => { if(dragging) $('ytPreview').style.pointerEvents = ''; dragging=false; });
+  el.addEventListener('dblclick', e => {
+    if(e.target.classList.contains('rhandle')) return;
+    e.stopPropagation();
+    const def=DEFAULT_POS[ovState.layout][posKey];
+    ovState[posKey].cx=def.cx; ovState[posKey].cy=def.cy; ovState[posKey].w=def.w; ovState[posKey].h=def.h;
+    positionOverlays();
+  });
+  addResizeHandles(el, posKey);
+}
+function addResizeHandles(el, posKey) {
+  ['nw','ne','sw','se','w','e','n','s'].forEach(dir => {
+    const h=document.createElement('div');
+    h.className=`rhandle rh-${dir}`;
+    el.appendChild(h);
+    h.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); startResize(e,posKey,dir); });
+  });
+}
+function startResize(e,posKey,dir) {
+  const box=$('previewBox'), bw=box.clientWidth, bh=box.clientHeight;
+  const startX=e.clientX, startY=e.clientY;
+  const s0 = { w:ovState[posKey].w, h:ovState[posKey].h, cx:ovState[posKey].cx, cy:ovState[posKey].cy };
+  const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi, v));
+  $('ytPreview').style.pointerEvents = 'none';
+  function onMove(ev) {
+    const dx=(ev.clientX-startX)/bw, dy=(ev.clientY-startY)/bh;
+    const st=ovState[posKey];
+    if (dir.includes('e')) st.w = clamp(s0.w+dx, 0.1, 0.95);
+    if (dir.includes('w')) { st.w = clamp(s0.w-dx, 0.1, 0.95); st.cx = clamp(s0.cx+dx/2, 0.05, 0.95); }
+    if (dir.includes('s')) st.h = clamp(s0.h+dy, 0.03, 0.9);
+    if (dir.includes('n')) { st.h = clamp(s0.h-dy, 0.03, 0.9); st.cy = clamp(s0.cy+dy/2, 0.02, 0.98); }
+    positionOverlays();
+  }
+  function onUp() { $('ytPreview').style.pointerEvents = ''; document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); }
+  document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+}
+
+// ── 시간 조절 ──
+function adjustTime(target, delta) {
+  const dur = $('previewVideo').duration || 99999;
+  if(target==='start') {
+    editStart = Math.max(0, Math.min(editEnd-0.5, editStart+delta));
+    if(videoLoaded) $('previewVideo').currentTime=editStart;
+  } else {
+    editEnd = Math.max(editStart+0.5, Math.min(dur, editEnd+delta));
+    if(videoLoaded) $('previewVideo').currentTime=editEnd;
+  }
+  updateTimeDisplays(); updateTimeline();
+}
+function updateTimeDisplays() {
+  $('editStartDisplay').textContent = ftp(editStart);
+  $('editEndDisplay').textContent   = ftp(editEnd);
+  $('editDuration').textContent     = fd(editEnd-editStart);
+  updateTimeline();
+}
+function updateTimeline() {
+  const total = $('previewVideo').duration || 1;
+  const s=(editStart/total)*100, e=(editEnd/total)*100;
+  $('clipRegion').style.left  = s+'%';
+  $('clipRegion').style.width = (e-s)+'%';
+  $('tlHandleStart').style.left = `calc(${s}% - 3px)`;
+  $('tlHandleEnd').style.left   = `calc(${e}% - 3px)`;
+  $('tlStart').textContent = formatTime(editStart);
+  $('tlEnd').textContent   = formatTime(editEnd);
+  $('tlDur').textContent   = fd(editEnd-editStart);
+}
+function initTimelineHandles() {
+  function startDrag(e, isStart) {
+    e.preventDefault(); e.stopPropagation();
+    const bar=$('timelineBar');
+    function onMove(ev) {
+      const rect=bar.getBoundingClientRect();
+      const ratio=Math.max(0,Math.min(1,(ev.clientX-rect.left)/rect.width));
+      const t=ratio*($('previewVideo').duration||1);
+      if(isStart) { editStart=Math.max(0,Math.min(editEnd-0.5,t)); if(videoLoaded) $('previewVideo').currentTime=editStart; }
+      else        { editEnd=Math.max(editStart+0.5,Math.min($('previewVideo').duration||editEnd,t)); if(videoLoaded) $('previewVideo').currentTime=editEnd; }
+      updateTimeDisplays();
+    }
+    function onUp() { document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); }
+    document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+  }
+  $('tlHandleStart').addEventListener('mousedown', e => startDrag(e,true));
+  $('tlHandleEnd').addEventListener('mousedown',   e => startDrag(e,false));
+  $('timelineBar').addEventListener('click', e => {
+    if(e.target.classList.contains('tl-handle')) return;
+    const r=e.currentTarget.getBoundingClientRect();
+    if(videoLoaded) $('previewVideo').currentTime=((e.clientX-r.left)/r.width)*($('previewVideo').duration||0);
+  });
+}
+function onTimeUpdate() {
+  const v=$('previewVideo');
+  if(v.currentTime>=editEnd) { v.pause(); v.currentTime=editEnd; }
+  $('currentTimeDisplay').textContent=formatTime(v.currentTime);
+  const pct=(v.currentTime/(v.duration||1))*100;
+  $('timelineCursor').style.left=pct+'%';
+}
+
+// ── 태그 ──
+function renderTags() {
+  const c=$('tagsEdit'); c.innerHTML='';
+  editTags.forEach((tag,i) => {
+    const chip=document.createElement('div');
+    chip.className='tag-chip';
+    chip.innerHTML=`<span>#${esc(tag)}</span><button data-i="${i}">✕</button>`;
+    chip.querySelector('button').addEventListener('click', () => { editTags.splice(i,1); renderTags(); });
+    c.appendChild(chip);
+  });
+}
+function addTag() {
+  const input=$('newTagInput');
+  const val=input.value.trim().replace(/^#/,'');
+  if(val && !editTags.includes(val)) { editTags.push(val); renderTags(); }
+  input.value='';
+}
+
+
+// ── FFmpeg.wasm MP4 추출 ──
+let ffmpegInstance = null;
+
+function loadScriptTag(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('스크립트 로드 실패: ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function loadFFmpeg() {
+  if (ffmpegInstance) return ffmpegInstance;
+  toast('⏳ FFmpeg 로딩 중... (첫 실행 시 약 30~60초 소요)', 'info', 8000);
+  // ⚠️ 반드시 UMD 빌드를 사용할 것.
+  // ESM 빌드의 worker.js는 "./const.js" 상대경로 import를 쓰는데, CDN 교차출처 때문에
+  // blob URL로 워커를 만들면 상대경로 기준이 없어 로드가 영원히 멈춤(hang).
+  // UMD의 814.ffmpeg.js는 자기완결형 번들이라 blob 워커로 정상 동작함.
+  if (!window.FFmpegWASM) await loadScriptTag('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js');
+  if (!window.FFmpegUtil) await loadScriptTag('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js');
+  const { FFmpeg } = window.FFmpegWASM;
+  const { toBlobURL } = window.FFmpegUtil;
+  const ff = new FFmpeg();
+  ff.on('log', ({ message }) => appendLog('[ffmpeg] ' + message));
+  ff.on('progress', ({ progress }) => {
+    const pct = Math.max(0, Math.min(100, Math.round(progress * 100)));
+    $('editorVideoExportBtn').textContent = '🎬 처리 중 ' + pct + '%';
+  });
+  // 단일 스레드 코어(@ffmpeg/core): SharedArrayBuffer/COOP·COEP 헤더 불필요 → file:// 에서도 동작
+  // 워커가 module 타입이라 코어는 ESM 빌드(default export 필요), 워커 번들은 UMD(자기완결형) 조합이어야 함
+  const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  await ff.load({
+    coreURL: await toBlobURL(coreBase + '/ffmpeg-core.js', 'text/javascript'),
+    wasmURL: await toBlobURL(coreBase + '/ffmpeg-core.wasm', 'application/wasm'),
+    classWorkerURL: await toBlobURL('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js', 'text/javascript'),
+  });
+  ffmpegInstance = ff;
+  return ff;
+}
+
+// ── 제목/채널명 오버레이를 1080x1920 투명 PNG로 렌더링 ──
+// FFmpeg drawtext(폰트 파일 필요) 대신 캔버스로 그려서 합성 → 미리보기와 동일한 모습으로 구워짐
+function wrapCanvasText(ctx, text, maxWidth) {
+  const lines = [];
+  for (const rawLine of String(text).split('\n')) {
+    const words = rawLine.split(' ');
+    let line = '';
+    for (const word of words) {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width <= maxWidth || !line) {
+        line = test;
+        // 한 단어(띄어쓰기 없는 긴 한글 등)가 박스보다 길면 글자 단위로 쪼갬
+        while (ctx.measureText(line).width > maxWidth && line.length > 1) {
+          let cut = line.length - 1;
+          while (cut > 1 && ctx.measureText(line.slice(0, cut)).width > maxWidth) cut--;
+          lines.push(line.slice(0, cut));
+          line = line.slice(cut);
+        }
+      } else {
+        lines.push(line);
+        line = word;
+      }
+    }
+    if (line) lines.push(line);
+  }
+  return lines;
+}
+
+function drawOverlayBox(ctx, st, text, bold) {
+  const W = 1080, H = 1920;
+  const boxW = st.w * W, boxH = st.h * H;
+  const x = st.cx * W - boxW / 2, y = st.cy * H - boxH / 2;
+  if (st.bgOn) {
+    ctx.save();
+    ctx.fillStyle = st.bg;
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x, y, boxW, boxH, 10); } else { ctx.rect(x, y, boxW, boxH); }
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x, y, boxW, boxH); ctx.clip(); // 미리보기의 overflow:hidden과 동일
+  ctx.font = `${bold ? '700' : '400'} ${st.size}px "${st.font}"`;
+  ctx.fillStyle = st.color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 3;
+  const padX = 44;
+  const lines = wrapCanvasText(ctx, text, Math.max(40, boxW - padX * 2));
+  const lh = st.size * 1.35;
+  let ty = st.cy * H - (lines.length * lh) / 2 + lh / 2;
+  for (const line of lines) {
+    ctx.fillText(line, st.cx * W, ty);
+    ty += lh;
+  }
+  ctx.restore();
+}
+
+async function renderOverlayPNG() {
+  const titleText = $('editTitle').value.trim();
+  const chText = $('channelName').value.trim();
+  const showCh = $('showChannel').checked && chText;
+  if (!titleText && !showCh) return null;
+  try { await document.fonts.ready; } catch {}
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080; canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+  if (titleText) drawOverlayBox(ctx, ovState.title, titleText, ovState.title.bold);
+  if (showCh)    drawOverlayBox(ctx, ovState.channel, chText, false);
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+async function exportVideoClip(idx) {
+  if (!videoFile) {
+    toast('⚠️ 편집기에 영상 파일을 먼저 불러오세요 (드래그&드롭)', 'error', 4000);
+    return;
+  }
+  const clip = clips[idx];
+  const start = editStart;
+  const end = editEnd;
+  const btn = $('editorVideoExportBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ FFmpeg 로딩...';
+  try {
+    const ff = await loadFFmpeg();
+    btn.textContent = '🎬 영상 처리 중...';
+    const { fetchFile } = window.FFmpegUtil;
+    const ext = (videoFile.name.split('.').pop() || 'mp4').toLowerCase();
+    const inputName = 'input.' + ext;
+    await ff.writeFile(inputName, await fetchFile(videoFile));
+    let vf;
+    if (ovState.layout === 'letterbox') {
+      vf = 'scale=1080:trunc(1080/dar/2)*2,pad=1080:1920:(1080-iw)/2:(1920-ih)/2:black';
+    } else {
+      vf = 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920';
+    }
+    const titleSafe = (clip.title || 'clip').replace(/[\/:*?"<>|]/g, '_').slice(0, 40);
+    const outputName = 'clip' + (idx + 1) + '_' + titleSafe + '.mp4';
+    // 제목/채널명을 미리보기 모습 그대로 PNG로 그려 영상에 합성 (burn-in)
+    const overlayPng = await renderOverlayPNG();
+    const args = ['-ss', String(start), '-to', String(end), '-i', inputName];
+    if (overlayPng) {
+      await ff.writeFile('overlay.png', overlayPng);
+      args.push(
+        '-i', 'overlay.png',
+        '-filter_complex', `[0:v]${vf}[base];[base][1:v]overlay=0:0[outv]`,
+        '-map', '[outv]', '-map', '0:a?'
+      );
+    } else {
+      args.push('-vf', vf);
+    }
+    args.push(
+      '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+      '-c:a', 'aac', '-b:a', '128k',
+      '-movflags', '+faststart',
+      '-y', outputName
+    );
+    await ff.exec(args);
+    const data = await ff.readFile(outputName);
+    const blob = new Blob([data.buffer], { type: 'video/mp4' });
+    if (saveDirHandle) {
+      try {
+        const fh = await saveDirHandle.getFileHandle(outputName, { create: true });
+        const wr = await fh.createWritable();
+        await wr.write(blob);
+        await wr.close();
+        toast('✅ ' + saveDirHandle.name + '/' + outputName + ' 저장 완료!', 'success', 5000);
+      } catch (e) {
+        downloadBlob(blob, outputName);
+        toast('⬇️ 다운로드됨 (폴더 저장 실패: ' + e.message + ')', 'warn', 5000);
+      }
+    } else {
+      downloadBlob(blob, outputName);
+      toast('⬇️ ' + outputName + ' 다운로드 완료!', 'success', 4000);
+    }
+    await ff.deleteFile(inputName).catch(function(){});
+    await ff.deleteFile(outputName).catch(function(){});
+    await ff.deleteFile('overlay.png').catch(function(){});
+    btn.textContent = '✅ MP4 완료';
+  } catch (e) {
+    console.error(e);
+    toast('❌ MP4 추출 실패: ' + e.message, 'error', 6000);
+    btn.textContent = '🎬 MP4 추출';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 60000);
+}
+
+// ── 저장 (타임스탬프 출력 + 폴더 저장) ──
+async function doExport(idx) {
+  const clip = clips[idx];
+  clip.title = $('editTitle').value.trim() || clip.title;
+  clip.hashtags = [...editTags];
+  clip.start = editStart;
+  clip.end = editEnd;
+
+  const titleSafe = clip.title.replace(/[\\/:*?"<>|]/g,'_').slice(0,40);
+  const vtitle = videoInfo ? videoInfo.title.replace(/[\\/:*?"<>|]/g,'_').slice(0,30) : 'clip';
+  const filename = `clip${idx+1}_${titleSafe}.txt`;
+
+  const fileContent = [
+    `[숏츠 클립 정보]`,
+    `영상: ${videoInfo ? videoInfo.title : ''}`,
+    ``,
+    `제목: ${clip.title}`,
+    `구간: ${formatTime(editStart)} ~ ${formatTime(editEnd)} (${fd(editEnd-editStart)})`,
+    `후킹: ${clip.hook || ''}`,
+    `태그: ${editTags.map(t=>'#'+t).join(' ')}`,
+    ``,
+    `레이아웃: ${ovState.layout === 'letterbox' ? '레터박스' : '풀스크린'}`,
+    `채널명: ${$('channelName').value || ''}`,
+    `생성일시: ${new Date().toLocaleString('ko-KR')}`,
+  ].join('\n');
+
+  // 설정된 폴더에 자동 저장
+  let savedToDir = false;
+  if (saveDirHandle) {
+    savedToDir = await saveTextToDir(filename, fileContent);
+    if (savedToDir) toast(`💾 ${saveDirHandle.name}\\${filename} 저장 완료!`, 'success', 4000);
+  }
+
+  $('exportTsText').innerHTML =
+    `<b>📌 ${esc(clip.title)}</b>\n` +
+    `⏱ <span style="color:var(--accent)">${formatTime(editStart)}</span> ~ <span style="color:var(--accent)">${formatTime(editEnd)}</span>  ·  ${fd(editEnd-editStart)}\n` +
+    `🏷 ${editTags.map(t=>`<span style="color:var(--muted)">#${esc(t)}</span>`).join(' ')}` +
+    (savedToDir ? `\n<span style="color:var(--success);font-size:10px;">💾 ${filename} 저장됨</span>` : '');
+  $('exportSection').style.display = 'block';
+
+  const card = document.querySelector(`#clipsGrid .clip-card:nth-child(${idx+1})`);
+  if(card) card.classList.add('exported');
+
+  if (!savedToDir) toast(`✅ 클립 ${idx+1} 정보 준비됨! 복사 버튼으로 가져가세요.`, 'info');
+  $('editorExportBtn').textContent = '✅ 저장됨';
+}
+
+function copyTimestamps() {
+  const clip = clips[editIdx];
+  if (!clip) return;
+  const text = `${clip.title}\n${formatTime(editStart)} ~ ${formatTime(editEnd)} (${fd(editEnd-editStart)})\n${editTags.map(t=>'#'+t).join(' ')}`;
+  navigator.clipboard.writeText(text).then(() => toast('📋 타임스탬프 복사됨!', 'success'));
+}
+function copyTags() {
+  if (!editTags.length) return;
+  navigator.clipboard.writeText(editTags.map(t=>'#'+t).join(' ')).then(() => toast('📋 태그 복사됨!', 'success'));
+}
+
+// ── 리셋 ──
+function resetApp() {
+  segments=[]; clips=[]; videoInfo=null;
+  $('urlInput').value='';
+  $('step3').style.display='none';
+  $('step2').style.display='none';
+  $('step1').style.display='block';
+  $('manualCaptionArea').classList.remove('show');
+  $('manualCaptionInput').value='';
+  pipe('fetch','','대기');
+  pipe('analyze','','대기');
+}
+
+// ── 파이프라인 단계 상태 ──
+function pipe(stage, state, txt) {
+  const el = $(`pipe-${stage}`);
+  el.className = 'pipe-step' + (state ? ' '+state : '');
+  $(`status-${stage}`).textContent = txt;
+}
+
+// ── 헬퍼 ──
+function appendLog(msg) {
+  if(!msg?.trim()) return;
+  const b=$('logBox'), d=document.createElement('div');
+  d.textContent=msg.trim(); b.appendChild(d); b.scrollTop=b.scrollHeight;
+}
+function log(m) { appendLog(m); }
+function formatTime(s) {
+  const m=Math.floor(s/60).toString().padStart(2,'0');
+  const sec=Math.floor(s%60).toString().padStart(2,'0');
+  return `${m}:${sec}`;
+}
+function ftp(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toFixed(1).padStart(4,'0')}`; }
+function fd(s) { return s<60 ? `${s.toFixed(1)}초` : `${Math.floor(s/60)}분 ${Math.round(s%60)}초`; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toast(msg, type='info', duration=3000) {
+  const c=$('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, duration);
+}
+</script>
+</body>
+</html>
