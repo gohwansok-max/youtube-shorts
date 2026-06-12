@@ -405,14 +405,14 @@ body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
         <!-- 비디오 프리뷰 (영상 없이도 항상 표시 → 텍스트 배치 가능) -->
         <div class="preview-box mode-letterbox" id="previewBox">
           <img class="preview-thumb-bg" id="previewThumbBg" alt="" style="display:none;">
-          <iframe id="ytPreview" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          <iframe id="ytPreview" style="display:none;position:absolute;border:0;z-index:1;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
           <video id="previewVideo" preload="metadata" style="display:none;"></video>
           <div class="preview-placeholder" id="videoDropzone">
             <input type="file" id="videoFileInput" accept="video/*">
             <div class="drop-icon">🎬</div>
             <div class="drop-txt">
-              영상 파일을 드래그하거나<br>클릭해서 불러오세요<br>
-              <span style="font-size:10px;color:#999;">(MP4, MOV 등)<br>영상 없이도 텍스트 배치는 가능합니다</span>
+              영상 파일을 드래그하거나<br>탭해서 갤러리에서 불러오세요<br>
+              <span style="font-size:10px;color:#999;">(MP4, MOV 등)<br>Google Drive는 아래 버튼 이용</span>
             </div>
           </div>
           <div class="ov-title" id="ovTitle" style="display:none;"></div>
@@ -425,10 +425,16 @@ body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
             <div class="gline gv" style="left:66.6%"></div>
           </div>
         </div>
+        <!-- Google Drive / 전체 파일 관리자 불러오기 (갤러리 외) -->
+        <div class="player-controls" id="gdriveRow" style="display:none;">
+          <button class="ctrl-btn" id="gdriveBtn" style="flex:1;text-align:center;">☁️ Google Drive에서 불러오기</button>
+        </div>
+        <input type="file" id="videoFileInputBroad" style="display:none">
         <!-- YouTube 미리보기 컨트롤 (영상 파일을 불러오기 전) -->
         <div class="player-controls" id="ytPreviewControls" style="display:none;">
           <button class="ctrl-btn" id="ytSeekBtn">▶ 시작점부터 재생</button>
-          <button class="ctrl-btn" id="ytLoadFileBtn">📂 영상 파일 불러오기</button>
+          <button class="ctrl-btn" id="ytLoadFileBtn">📂 갤러리/파일</button>
+          <button class="ctrl-btn" id="ytGdriveBtn">☁️ Google Drive</button>
         </div>
         <!-- 플레이어 컨트롤 (비디오 있을 때만) -->
         <div class="player-controls" id="playerControls" style="display:none;">
@@ -751,6 +757,16 @@ document.addEventListener('DOMContentLoaded', () => {
     $('ytPreview').src = `https://www.youtube-nocookie.com/embed/${currentVideoId}?start=${Math.max(0, Math.floor(editStart))}&autoplay=1&rel=0`;
   });
   $('ytLoadFileBtn').addEventListener('click', () => $('videoFileInput').click());
+  $('ytGdriveBtn').addEventListener('click', () => $('videoFileInputBroad').click());
+  $('gdriveBtn').addEventListener('click', () => $('videoFileInputBroad').click());
+  $('videoFileInputBroad').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const isVideo = f.type.startsWith('video/') || /\.(mp4|mov|mkv|avi|webm|m4v)$/i.test(f.name);
+    if (isVideo) loadVideoFile(f);
+    else toast('영상 파일(MP4, MOV, MKV 등)을 선택해주세요.', 'error');
+    e.target.value = '';
+  });
   $('pauseBtn').addEventListener('click', () => $('previewVideo').pause());
 
   // 비디오 파일 드롭존
@@ -1478,11 +1494,13 @@ function openEditor(idx) {
       $('ytPreview').style.display = 'block';
       $('videoDropzone').style.display = 'none';
       $('ytPreviewControls').style.display = 'flex';
+      $('gdriveRow').style.display = 'none';
       $('previewThumbBg').style.display = 'none';
     } else {
       $('ytPreview').style.display = 'none';
       $('ytPreviewControls').style.display = 'none';
       $('videoDropzone').style.display = 'flex';
+      $('gdriveRow').style.display = 'flex';
       const thumb = videoInfo && videoInfo.thumb;
       $('previewThumbBg').style.display = thumb ? 'block' : 'none';
       if (thumb) $('previewThumbBg').src = thumb;
@@ -1516,6 +1534,7 @@ function loadVideoFile(file) {
   video.style.display = 'block';
   videoLoaded = true;
   $('videoDropzone').style.display = 'none';
+  $('gdriveRow').style.display = 'none';
   $('previewThumbBg').style.display = 'none';
   $('ytPreview').src = '';
   $('ytPreview').style.display = 'none';
@@ -1523,6 +1542,29 @@ function loadVideoFile(file) {
   $('playerControls').style.display = 'flex';
   $('timelineWrap').style.display = 'flex';
   toast(`🎬 ${file.name} 로드됨`, 'success');
+}
+
+// ── YouTube 미리보기를 최종 출력물과 동일한 구도로 배치 ──
+// 레터박스: 16:9 영상이 가운데, 위아래 검은 여백이 실제 비율대로 보임 → 여백에 텍스트 배치 가능
+// 풀스크린: 영상이 화면을 꽉 채우도록 좌우를 잘라냄 (crop과 동일한 모습)
+function layoutYtPreview() {
+  const yt = $('ytPreview');
+  if (yt.style.display === 'none') return;
+  const box = $('previewBox'), bw = box.clientWidth, bh = box.clientHeight;
+  if (!bw || !bh) return;
+  if (ovState.layout === 'letterbox') {
+    const h = bw * 9 / 16;            // 16:9 영상을 가로폭에 맞춤
+    yt.style.left = '0px';
+    yt.style.width = bw + 'px';
+    yt.style.top = ((bh - h) / 2) + 'px';
+    yt.style.height = h + 'px';
+  } else {
+    const w = bh * 16 / 9;            // 세로를 꽉 채우고 좌우는 박스 밖으로 (overflow hidden)
+    yt.style.top = '0px';
+    yt.style.height = bh + 'px';
+    yt.style.left = ((bw - w) / 2) + 'px';
+    yt.style.width = w + 'px';
+  }
 }
 
 // ── 오버레이 ──
@@ -1554,6 +1596,7 @@ function updateOverlay() {
   chEl.style.color = ovState.channel.color;
   chEl.style.background = ovState.channel.bgOn ? ovState.channel.bg : 'transparent';
   positionOverlays();
+  layoutYtPreview();
 }
 function positionOverlays() {
   const box = $('previewBox');
