@@ -303,7 +303,7 @@ body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
   <div class="settings-footer">
     <button class="btn btn-primary btn-sm" id="saveSettingsBtn">💾 저장</button>
     <span class="save-msg" id="saveMsg"></span>
-    <span style="font-size:11px;color:var(--muted);margin-left:auto;">키는 브라우저 로컬에만 저장됩니다</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:auto;">키는 입력 즉시 자동 저장됩니다</span>
   </div>
 </div>
 
@@ -663,7 +663,10 @@ document.addEventListener('DOMContentLoaded', () => {
   $('toggleGemini').addEventListener('click',   () => { const i=$('geminiKeyInput');    i.type=i.type==='password'?'text':'password'; });
   $('toggleYt').addEventListener('click',       () => { const i=$('ytKeyInput');         i.type=i.type==='password'?'text':'password'; });
   $('saveSettingsBtn').addEventListener('click', saveSettings);
-  $('clipCountRange').addEventListener('input', () => { clipCount=parseInt($('clipCountRange').value); $('clipCountVal').textContent=clipCount; });
+  // API 키는 입력 즉시 자동 저장
+  $('geminiKeyInput').addEventListener('input', () => { geminiKey = $('geminiKeyInput').value.trim(); localStorage.setItem('gemini_key', geminiKey); });
+  $('ytKeyInput').addEventListener('input',     () => { ytKey     = $('ytKeyInput').value.trim();     localStorage.setItem('yt_key', ytKey); });
+  $('clipCountRange').addEventListener('input', () => { clipCount=parseInt($('clipCountRange').value); $('clipCountVal').textContent=clipCount; localStorage.setItem('clip_count', clipCount); });
 
   // Step1
   $('startBtn').addEventListener('click', startPipeline);
